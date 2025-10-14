@@ -17,6 +17,10 @@ export interface LosDebugInfo {
 }
 
 export function calculateLosBetweenTwoTiles(tileOne: WorldPosition, tileTwo: WorldPosition, tileMap: TileMap, debugInfo?: Record<string, unknown>): boolean {
+    // @TODO: should just use y = mx + c, check along each x integer and see if y has changed
+    // e.g. starting at tile 1,1 going to tile 7, 10
+    // y starts at 1, x starts at 1, m is 5/3, c is -2/3.
+    // Next x integer is 2, so y = 2*5/3 -2/3 = 7/3, so the only integer y has passed is 2
     const tileOneCentre = tileOne.getCentre()
     const tileTwoCentre = tileTwo.getCentre()
 

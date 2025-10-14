@@ -6,7 +6,7 @@ import { SquareUiElement } from "./square_ui_element";
 
 export class RibbonButton extends SquareUiElement {
     private ribbonMenuController: ControlledUiElement
-    private childElement: IInteractiveUiElement
+    childElement: IInteractiveUiElement
 
     constructor(
         isActive: boolean,
