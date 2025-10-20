@@ -221,4 +221,16 @@ export class UiEngineCommunicator {
     queueEatFood() {
         this.inputQueue.queueEatFood()
     }
+
+    getCameraRotationAngle() {
+        return this.coordinator.camera.rotationAngle
+    }
+
+    setCameraRotationAngle(rotationAngle: number) {
+        return this.coordinator.camera.setRotationAngle(rotationAngle)
+    }
+
+    getCameraBaseTileSize() {
+        return this.coordinator.camera.baseTileSize
+    }
 }

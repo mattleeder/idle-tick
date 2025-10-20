@@ -1,22 +1,22 @@
 import type { ScreenPosition } from "../position";
-import { CircularUIElement } from "./circular_ui_element";
 import type { InteractiveElementDebugInfo, IInteractiveUiElement, InteractiveUiElementStateImages } from "./interactive_element";
+import { TwoStateCircularButton } from "./two_state_circular_button";
 
-export class DrainingButton extends CircularUIElement {
+export class DrainingButton extends TwoStateCircularButton {
     private getStat: () => {numerator: number, denominator: number}
 
     constructor(
         isActive: boolean,
-        isClickable: boolean,
         elementPosition: ScreenPosition,
         radius: number,
-        iconRecord: InteractiveUiElementStateImages,
-        backgroundRecord: InteractiveUiElementStateImages,
+        unClickedIcon: HTMLImageElement | undefined,
+        clickedIcon: HTMLImageElement | undefined,
+        unClickedBackground: HTMLImageElement | undefined,
+        clickedBackground: HTMLImageElement | undefined,
         debugInfo: InteractiveElementDebugInfo,
-        getStat: () => {numerator: number, denominator: number},
-        children: IInteractiveUiElement[] = []
+        getStat: () => {numerator: number, denominator: number}
     ) {
-        super(isActive, isClickable, elementPosition, radius, iconRecord, backgroundRecord, debugInfo, children)
+        super(isActive, elementPosition, radius, unClickedIcon, clickedIcon, unClickedBackground, clickedBackground, debugInfo)
         this.getStat = getStat
     }
     

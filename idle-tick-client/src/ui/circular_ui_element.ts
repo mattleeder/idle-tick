@@ -4,10 +4,7 @@ import { InteractiveElement, type IInteractiveUiElement, type InteractiveElement
 export class CircularUIElement extends InteractiveElement<number> {
 
     protected activeBackground: HTMLImageElement | undefined
-    protected backgroundRecord: InteractiveUiElementStateImages
-
     protected activeIcon: HTMLImageElement | undefined
-    protected iconRecord: InteractiveUiElementStateImages
 
     protected radius: number
 
@@ -16,27 +13,11 @@ export class CircularUIElement extends InteractiveElement<number> {
         isClickable: boolean,
         elementPosition: ScreenPosition,
         radius: number,
-        iconRecord: InteractiveUiElementStateImages,
-        backgroundRecord: InteractiveUiElementStateImages,
         debugInfo: InteractiveElementDebugInfo,
         children: IInteractiveUiElement[] = []
     ) {
         super(isActive, isClickable, elementPosition, radius, debugInfo, children)
         this.radius = radius
-        this.iconRecord = iconRecord
-        this.backgroundRecord = backgroundRecord
-
-        this.onMouseEnter(() => this.setActiveIcon(this.iconRecord["hovered"]))
-        this.onMouseEnter(() => this.setActiveBackground(this.backgroundRecord["hovered"]))
-
-        this.onMouseLeave(() => this.setActiveIcon(this.iconRecord["default"]))
-        this.onMouseLeave(() => this.setActiveBackground(this.backgroundRecord["default"]))
-
-        this.onMouseDown(() => this.setActiveIcon(this.iconRecord["down"]))
-        this.onMouseDown(() => this.setActiveBackground(this.backgroundRecord["down"]))
-
-        this.onMouseClick(() => this.setActiveIcon(this.iconRecord["clicked"]))
-        this.onMouseClick(() => this.setActiveBackground(this.backgroundRecord["clicked"]))
     }
 
     setActiveBackground(newBackground: HTMLImageElement | undefined) {
@@ -48,13 +29,19 @@ export class CircularUIElement extends InteractiveElement<number> {
     }
 
     mouseWithinBoundary(mousePositionX: number, mousePositionY: number): boolean {
-        if (((mousePositionX - this.radius) ** 2 + (mousePositionY - this.radius) ** 2) < this.radius ** 2) {
+        if (((mousePositionX - this.elementPosition.x) ** 2 + (mousePositionY - this.elementPosition.y) ** 2) < this.radius ** 2) {
             return true
         }
         return false
     }
 
     draw(ctx: CanvasRenderingContext2D) {
+        if (!this.isActive) {
+            return
+        }
+
+        ctx.save()
+
         ctx.strokeStyle = "#000000"
         ctx.beginPath()
         ctx.arc(this.elementPosition.x, this.elementPosition.y, this.radius, 0, 2 * Math.PI)
@@ -80,6 +67,8 @@ export class CircularUIElement extends InteractiveElement<number> {
                 this.radius * 2,
             )
         }
+
+        ctx.restore()
     }
 
 }

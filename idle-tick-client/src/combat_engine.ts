@@ -1,7 +1,6 @@
 import { PlayerDataGrabber } from "./access_player_data";
 import { Camera } from "./camera";
 import { CombatInputQueue } from "./combat_input_queue";
-import { createUIElements, type CombatUI } from "./combat_ui";
 import { Coordinator } from "./ecs";
 import { type TransformComponent, type StaminaComponent, type MovementComponent, type ModelComponent, type HealthComponent, type DamageReceiverComponent, type HitSplatComponent, type SimpleBehaviourComponent, type OffsensiveStatsComponent, type HomingProjectileComponent, type InventoryComponent, type ItemDetailsComponent, type PlayerEquipmentComponent, type ArmourComponent, type PrayerComponent, type DefensiveStatsComponent, type AttackCommandComponent, type PathingComponent, type PlayerComponent } from "./ecs_components";
 import { ModelRenderSystem, HitSplatRenderSystem, HealthBarRenderSystem, PrayerRenderSystem } from "./ecs_render_systems";
@@ -26,7 +25,6 @@ export class CombatEngine {
     private lastTime = 0;
     private timeSinceLastTick = 0;
     private frameCount = 0;
-    private uiElements: CombatUI[];
     private newUiElements: IInteractiveUiElement[];
     private player: Entity;
     private playerCurentRawInput: RawInput;
@@ -55,8 +53,7 @@ export class CombatEngine {
     private hitSplatRenderSystem: HitSplatRenderSystem
     private healthBarRenderSystem: HealthBarRenderSystem
     private prayerRenderSystem: PrayerRenderSystem
-
-    private playerDataGrabber: PlayerDataGrabber
+    
     private uiEngineCommunicator: UiEngineCommunicator
 
     private combatInstance: Instance
@@ -149,8 +146,6 @@ export class CombatEngine {
         const playerInventory = this.coordinator.getComponent<InventoryComponent>(this.player, ComponentTypes.Inventory)
         playerInventory.slots[0] = testItem
        
-        this.uiElements = createUIElements(this.camera, this.playerDataGrabber)
-
         this.newUiElements = createNewUIElements(this.uiEngineCommunicator, this.camera)
         
     }
@@ -306,12 +301,6 @@ export class CombatEngine {
     }
 
     private drawUI(): void {
-        for (const element of this.uiElements) {
-            if (element.getIsActive()) {
-                element.draw(this.ctx)
-            }
-        }
-
         for (const element of this.newUiElements) {
             // console.log(element)
             element.draw(this.ctx)
@@ -509,22 +498,24 @@ export class CombatEngine {
             mouseThreeReleased: !currentInput.mouseThreeIsDown && previousInput.mouseThreeIsDown,
         }
 
-
+        let uiWasClicked = false
+        // Check for UI clicks first
         for (const element of this.newUiElements) {
             element.handleMouseInput(processedInput)
+            if (element.shouldHaltInteraction) {
+                console.log("UI CLICK")
+                uiWasClicked = true
+                element.shouldHaltInteraction = false
+                break
+            }
+        }
+
+        if (uiWasClicked) {
+            return
         }
 
         if (currentInput.mouseOneIsDown && !previousInput.mouseOneIsDown) {
             const clickScreenPosition = new ScreenPosition(mouseXCanvasPosition, mouseYCanvasPosition)
-
-            // Check for UI clicks first
-            for (const element of this.uiElements) {
-                if(element.wasClicked(clickScreenPosition)) {
-                    element.onClick(clickScreenPosition)
-                    console.log("UI click")
-                    return
-                }
-            }
 
             const inter = this.camera.screenToWorld(clickScreenPosition)
             const clickWorldPosition = this.camera.roundWorldToTile(inter)

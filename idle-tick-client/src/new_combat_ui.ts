@@ -3,7 +3,9 @@ import type { Camera, Resolution } from "./camera";
 import type { EquipmentSlotKeys, PrayerKeys } from "./ecs_types";
 import { INVENTORY_COLUMNS, INVENTORY_ROWS, INVENTORY_SIZE, protectFromMagicIcon, protectFromMeleeIcon, protectFromRangedIcon } from "./globals";
 import { ScreenPosition } from "./position";
+import { CompassButton } from "./ui/compass_button";
 import { ControlledUiElement } from "./ui/controlled_ui_element";
+import { DrainingButton } from "./ui/draining_button";
 import { EquipmentButton, type EquipmentButtonData } from "./ui/equipment_button";
 import { dummyInteractiveUiElement, type IInteractiveUiElement, type InteractiveElementDebugInfo } from "./ui/interactive_element";
 import { InventoryButton } from "./ui/inventory_button";
@@ -13,6 +15,30 @@ import { SquareUiElement } from "./ui/square_ui_element";
 import { UiGroup } from "./ui/ui_group";
 import { UiEngineCommunicator } from "./ui_engine_communicator";
 
+
+const compassImage = new Image()
+compassImage.src = "src/assets/compass.png"
+
+const prayerBackgroundImage = new Image()
+prayerBackgroundImage.src = "src/assets/prayerbackground.png"
+
+const healthIconImage = new Image()
+healthIconImage.src = "src/assets/healthicon.png"
+
+const healthBackgroundImage = new Image()
+healthBackgroundImage.src = "src/assets/healthbackground.png"
+
+const specialAttackBackgroundImage = new Image()
+specialAttackBackgroundImage.src = "src/assets/special_attack_background.png"
+
+const combatIconImage = new Image()
+combatIconImage.src = "src/assets/combaticon.png"
+
+const staminaIconImage = new Image()
+staminaIconImage.src = "src/assets/staminaicon.png"
+
+const staminaBackgroundImage = new Image()
+staminaBackgroundImage.src = "src/assets/stamina_background.png"
 
 const transparentBackground = new Image()
 transparentBackground.src = "src/assets/transparent_background.png"
@@ -73,9 +99,40 @@ function createRibbonGroupWithButton(
 }
 
 export function createNewUIElements(uiEngineCommunicator: UiEngineCommunicator, camera: Camera): IInteractiveUiElement[] {
+
+    const getPrayerData = () => {
+        const data = uiEngineCommunicator.getCombatUIData()
+        return {numerator: data.playerCurrentPrayerPoints, denominator: data.playerMaxPrayerPoints}
+    }
+
+    const getHealthData = () => {
+        const data = uiEngineCommunicator.getCombatUIData()
+        return {numerator: data.playerCurrentHealth, denominator: data.playerMaxHealth}
+    }
+
+    const getSpecialAttackData = () => {
+        const data = uiEngineCommunicator.getCombatUIData()
+        return {numerator: data.playerCurrentSpecialAttack, denominator: data.playerMaxSpecialAttack}
+    }
+
+    const getStaminaData = () => {
+        const data = uiEngineCommunicator.getCombatUIData()
+        return {numerator: data.playerCurrentStamina, denominator: data.playerMaxStamina}
+    }
+
+    const compass = new CompassButton(true, new ScreenPosition(camera.resolution.width * 0.9, camera.resolution.height * 0.1), 32, compassImage, uiEngineCommunicator, {name: "compassButton"})
+    const prayer = new DrainingButton(true, new ScreenPosition(camera.resolution.width * 0.8, camera.resolution.height * 0.1), 32, prayerIconImage, prayerIconImage, prayerBackgroundImage, prayerBackgroundImage, {name: "prayerTopButton"}, () => getPrayerData())
+    const health = new DrainingButton(true, new ScreenPosition(camera.resolution.width * 0.7, camera.resolution.height * 0.1), 32, healthIconImage, healthIconImage, healthBackgroundImage, healthBackgroundImage, {name: "healthTopButton"}, () => getHealthData())
+    const specialAttack = new DrainingButton(true, new ScreenPosition(camera.resolution.width * 0.6, camera.resolution.height * 0.1), 32, combatIconImage, combatIconImage, specialAttackBackgroundImage, specialAttackBackgroundImage, {name: "specialAttackTopButton"}, () => getSpecialAttackData())
+    const stamina = new DrainingButton(true, new ScreenPosition(camera.resolution.width * 0.5, camera.resolution.height * 0.1), 32, staminaIconImage, staminaIconImage, staminaBackgroundImage, staminaBackgroundImage, {name: "staminaTopButton"}, () => getStaminaData())
+
+    stamina.onMouseClick(() => {
+        uiEngineCommunicator.toggleRun()
+    })
+    
     const ribbonButtonDimensions = {width: camera.resolution.width * 0.05, height: camera.resolution.height * 0.05}
-    // const ribbonGroupScreenPosition = new ScreenPosition(camera.resolution.width * 0.75, camera.resolution.height * 0.65)
-    const ribbonGroupScreenPosition = new ScreenPosition(0, 0)
+    const ribbonGroupScreenPosition = new ScreenPosition(camera.resolution.width * 0.75, camera.resolution.height * 0.65)
+    // const ribbonGroupScreenPosition = new ScreenPosition(0, 0)
     const ribbonGroupDimensions = {width: camera.resolution.width * 0.25, height: camera.resolution.height * 0.35}
     const ribbonMenuDimensions = {width: ribbonGroupDimensions.width, height: ribbonGroupDimensions.height - 2 * ribbonButtonDimensions.height}
     const ribbonGroup = new UiGroup(
@@ -196,7 +253,15 @@ export function createNewUIElements(uiEngineCommunicator: UiEngineCommunicator, 
     ribbonGroup.addChild(spellsMenuButton)
     ribbonGroup.addChild(spellsMenuGroup)
 
+    console.log(compass.elementPosition)
+    console.log(compass.elementSize)
+
     return [
+        compass,
+        prayer,
+        health,
+        specialAttack,
+        stamina,
         ribbonGroup,
     ]
 }

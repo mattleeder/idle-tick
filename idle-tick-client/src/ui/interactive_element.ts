@@ -15,6 +15,7 @@ export type InteractiveUiElementStateKeys = typeof InteractiveUiElementStates[ke
 export interface  IInteractiveUiElement {
     isActive: boolean
     elementPosition: ScreenPosition
+    shouldHaltInteraction: boolean
     handleMouseInput(processedInput: ProcessedInput): void
     draw(ctx: CanvasRenderingContext2D): void
 }
@@ -48,6 +49,7 @@ export abstract class InteractiveElement<T> implements IInteractiveUiElement {
     private _isDown: boolean
     private _isClicked: boolean
     private _elementPosition: ScreenPosition
+    private _shouldHaltInteraction: boolean
 
     private onActiveListeners: uiCallbackFn[]
     private onMouseDownListeners: uiCallbackFn[]
@@ -63,6 +65,7 @@ export abstract class InteractiveElement<T> implements IInteractiveUiElement {
         this._isHovered = false
         this._isDown = false
         this._isClicked = false
+        this._shouldHaltInteraction = false
 
         this._elementPosition = elementPosition
         this.elementSize = elementSize
@@ -146,6 +149,10 @@ export abstract class InteractiveElement<T> implements IInteractiveUiElement {
         }
     }
 
+    set shouldHaltInteraction(shouldHalt: boolean) {
+        this._shouldHaltInteraction = shouldHalt
+    }
+
     get isActive(): boolean {
         return this._isActive
     }
@@ -168,6 +175,10 @@ export abstract class InteractiveElement<T> implements IInteractiveUiElement {
 
     get elementPosition() {
         return this._elementPosition
+    }
+
+    get shouldHaltInteraction() {
+        return this._shouldHaltInteraction
     }
 
     set elementPosition(newPosition: ScreenPosition) {
@@ -200,6 +211,7 @@ export abstract class InteractiveElement<T> implements IInteractiveUiElement {
 
 
     handleMouseInput(processedInput: ProcessedInput) {
+        // @TODO: do we need to check all ui elements?
         if (processedInput.mouseMoved) {
             this.handleMouseMove(processedInput)
         }
@@ -218,6 +230,8 @@ export abstract class InteractiveElement<T> implements IInteractiveUiElement {
 
         for (const child of this.children) {
             child.handleMouseInput(processedInput)
+            this.shouldHaltInteraction = this.shouldHaltInteraction || child.shouldHaltInteraction
+            child.shouldHaltInteraction = false
         }
     }
 
@@ -232,6 +246,7 @@ export abstract class InteractiveElement<T> implements IInteractiveUiElement {
     handleMouseOnePress() {
         if (this.isHovered) {
             this.isDown = true
+            this.shouldHaltInteraction = true
         }
         return true
     }
@@ -243,6 +258,7 @@ export abstract class InteractiveElement<T> implements IInteractiveUiElement {
             // Then set isClicked back to false so that we can click again
             this.isClicked = true
             this.isClicked = false
+            this.shouldHaltInteraction = true
         }
         this.isDown = false
     }
