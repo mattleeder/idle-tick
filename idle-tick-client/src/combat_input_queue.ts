@@ -19,36 +19,36 @@ import type { Coordinator } from "./ecs";
 import { type Entity, type EquipmentSlotKeys, type PrayerKeys } from "./ecs_types";
 import type { WorldPosition } from "./position";
 
-interface AttackData {
+export interface AttackData {
     target: Entity,
 }
 
-interface MoveData {
+export interface MoveData {
     destination: WorldPosition,
     path: WorldPosition[],
 }
 
-interface AttackStyleChangeData {
+export interface AttackStyleChangeData {
 
 }
 
-interface PrayerChangeData {
+export interface PrayerChangeData {
     prayer: PrayerKeys
 }
 
-interface EquipmentChangeData {
+export interface EquipmentChangeData {
     itemEntityToEquip: Entity
 }
 
-interface UnequipData {
+export interface UnequipData {
     slot: EquipmentSlotKeys
 }
 
-interface PotionData {
+export interface PotionData {
 
 }
 
-interface FoodData {
+export interface FoodData {
 
 }
 

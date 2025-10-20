@@ -493,7 +493,7 @@ export class PlayerEquipmentSystem extends System {
 
 
         if (inventorySpaces < armourComponent.equipSlots.length) {
-            throw new Error(`only have ${inventorySpaces} spaces in invetory, cannot equip`)
+            throw new Error(`only have ${inventorySpaces} spaces in inventory, cannot equip`)
         }
 
         // eslint-disable-next-line @typescript-eslint/no-unused-vars

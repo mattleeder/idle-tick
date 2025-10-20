@@ -11,6 +11,7 @@ import { PrayerButton, type PrayerButtonData } from "./ui/prayer_button";
 import { RibbonButton } from "./ui/ribbon_button";
 import { SquareUiElement } from "./ui/square_ui_element";
 import { UiGroup } from "./ui/ui_group";
+import { UiEngineCommunicator } from "./ui_engine_communicator";
 
 
 const transparentBackground = new Image()
@@ -71,7 +72,7 @@ function createRibbonGroupWithButton(
     return [group, button]
 }
 
-export function createNewUIElements(uiDataGrabber: PlayerDataGrabber, camera: Camera): IInteractiveUiElement[] {
+export function createNewUIElements(uiEngineCommunicator: UiEngineCommunicator, camera: Camera): IInteractiveUiElement[] {
     const ribbonButtonDimensions = {width: camera.resolution.width * 0.05, height: camera.resolution.height * 0.05}
     // const ribbonGroupScreenPosition = new ScreenPosition(camera.resolution.width * 0.75, camera.resolution.height * 0.65)
     const ribbonGroupScreenPosition = new ScreenPosition(0, 0)
@@ -121,7 +122,7 @@ export function createNewUIElements(uiDataGrabber: PlayerDataGrabber, camera: Ca
     )
 
     for (let i = 0; i < INVENTORY_SIZE; i++) {
-        const inventoryItemButton = createInventoryButton(i, ribbonMenuDimensions)
+        const inventoryItemButton = createInventoryButton(i, ribbonMenuDimensions, uiEngineCommunicator)
         inventoryMenuGroup.addChild(inventoryItemButton)
     }
 
@@ -137,7 +138,7 @@ export function createNewUIElements(uiDataGrabber: PlayerDataGrabber, camera: Ca
         {name: "equipmentMenuButton"}
     )
 
-    const equipmentButtons = createEquipmentButtons(ribbonButtonDimensions)
+    const equipmentButtons = createEquipmentButtons(ribbonButtonDimensions, uiEngineCommunicator)
     for (const button of equipmentButtons) {
         equipmentMenuGroup.addChild(button)
     }
@@ -154,7 +155,7 @@ export function createNewUIElements(uiDataGrabber: PlayerDataGrabber, camera: Ca
         {name: "prayerMenuButton"}
     )
 
-    const prayerButtons = createPrayerButtons(uiDataGrabber, ribbonButtonDimensions)
+    const prayerButtons = createPrayerButtons(uiEngineCommunicator, ribbonButtonDimensions)
     for (const button of prayerButtons) {
         prayerMenuGroup.addChild(button)
     }
@@ -200,7 +201,7 @@ export function createNewUIElements(uiDataGrabber: PlayerDataGrabber, camera: Ca
     ]
 }
 
-function createInventoryButton(slotNumber: number, inventoryDimensions: Resolution) {
+function createInventoryButton(slotNumber: number, inventoryDimensions: Resolution, uiEngineCommunicator: UiEngineCommunicator) {
     const buttonRow = Math.floor(slotNumber / INVENTORY_COLUMNS)
     const buttonCol = slotNumber % INVENTORY_COLUMNS
 
@@ -222,13 +223,14 @@ function createInventoryButton(slotNumber: number, inventoryDimensions: Resoluti
         {width: colWidth, height: rowHeight},
         emptyEquipSlot,
         buttonData,
+        uiEngineCommunicator,
         {name: `inventorySlotPosition${slotPosition}`},
     )
 
     return button
 }
 
-function createEquipmentButtons(buttonDimensions: Resolution) {
+function createEquipmentButtons(buttonDimensions: Resolution, uiEngineCommunicator: UiEngineCommunicator) {
     const equipmentButtonPositions: Record<EquipmentSlotKeys, ScreenPosition> = {
         head:       new ScreenPosition(100, 0),
         cape:       new ScreenPosition(40, 55),
@@ -259,6 +261,7 @@ function createEquipmentButtons(buttonDimensions: Resolution) {
             buttonDimensions,
             emptyEquipSlot,
             equipmentButtonData,
+            uiEngineCommunicator,
             {name: `equipmentSlotPosition${slot}`},
         )
 
@@ -269,7 +272,7 @@ function createEquipmentButtons(buttonDimensions: Resolution) {
 
 }
 
-function createPrayerButtons(playerDataGrabber: PlayerDataGrabber, buttonDimensions: Resolution) {
+function createPrayerButtons(uiEngineCommunicator: UiEngineCommunicator, buttonDimensions: Resolution) {
     const prayerButtonPositions: Record<PrayerKeys, {icon: HTMLImageElement, position: ScreenPosition}> = {
         protectMage:  {icon: protectFromMagicIcon, position: new ScreenPosition(30, 100)},
         protectRange: {icon: protectFromRangedIcon, position: new ScreenPosition(100, 100)},
@@ -289,7 +292,7 @@ function createPrayerButtons(playerDataGrabber: PlayerDataGrabber, buttonDimensi
             buttonDimensions,
             data.icon,
             prayerButtonData,
-            playerDataGrabber,
+            uiEngineCommunicator,
             {name: `prayerType${slot}`},
         )
 

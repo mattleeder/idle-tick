@@ -501,3 +501,16 @@ export function createStandardRangeAttack(coordinator: Coordinator, source: Enti
 }
 
 // @TODO: need to calculate distance based on closest tile
+export function arraysAreEqual<T>(arrayOne: Array<T>, arrayTwo: Array<T>): boolean {
+    if (arrayOne.length != arrayTwo.length) {
+        return false
+    }
+
+    for (let i = 0; i < arrayOne.length; i++) {
+        if (arrayOne[i] != arrayTwo[i]) {
+            return false
+        }
+    }
+
+    return true
+}

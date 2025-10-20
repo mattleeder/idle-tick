@@ -1,8 +1,8 @@
-import type { PlayerDataGrabber } from "../access_player_data";
 import type { Resolution } from "../camera";
 import type { PrayerKeys } from "../ecs_types";
 import { INVENTORY_BUTTON_FLASH_DURATION_MS } from "../globals";
 import type { ScreenPosition } from "../position";
+import type { UiEngineCommunicator } from "../ui_engine_communicator";
 import type { InteractiveElementDebugInfo } from "./interactive_element";
 import { ClickStates, TwoStateSquareButton } from "./two_state_square_button";
 
@@ -12,7 +12,7 @@ export interface PrayerButtonData {
 
 export class PrayerButton extends TwoStateSquareButton {
     protected prayerButtonData: PrayerButtonData
-    protected playerDataGrabber: PlayerDataGrabber
+    protected uiEngineCommunicator: UiEngineCommunicator
 
     constructor(
         isActive: boolean,
@@ -20,7 +20,7 @@ export class PrayerButton extends TwoStateSquareButton {
         elementSize: Resolution,
         icon: HTMLImageElement,
         prayerButtonData: PrayerButtonData,
-        playerDataGrabber: PlayerDataGrabber,
+        uiEngineCommunicator: UiEngineCommunicator,
         debugInfo: InteractiveElementDebugInfo,
     ) {
         const clickedIcon = undefined 
@@ -35,7 +35,7 @@ export class PrayerButton extends TwoStateSquareButton {
             debugInfo,
         )
 
-        this.playerDataGrabber = playerDataGrabber
+        this.uiEngineCommunicator = uiEngineCommunicator
 
         this.prayerButtonData = prayerButtonData
 
@@ -44,7 +44,7 @@ export class PrayerButton extends TwoStateSquareButton {
                 console.log(`clicked on slot ${this.prayerButtonData.prayerType}`)
                 this.clickState = ClickStates.Clicked
                 setTimeout(() => this.clickState = ClickStates.UnClicked, INVENTORY_BUTTON_FLASH_DURATION_MS)
-                playerDataGrabber.inputQueue.queuePrayerChange({prayer: this.prayerButtonData.prayerType})
+                uiEngineCommunicator.queuePrayerChange({prayer: this.prayerButtonData.prayerType})
             }
         })
     }

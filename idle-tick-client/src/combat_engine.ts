@@ -14,6 +14,7 @@ import { pathingBFS } from "./pathing";
 import { ScreenPosition, WorldPosition } from "./position";
 import { TileMap, } from "./tile_maps";
 import type { IInteractiveUiElement } from "./ui/interactive_element";
+import { UiEngineCommunicator } from "./ui_engine_communicator";
 import { createPlayer, createTestItem, npcWasClicked } from "./utilities";
 
 export class CombatEngine {
@@ -56,6 +57,7 @@ export class CombatEngine {
     private prayerRenderSystem: PrayerRenderSystem
 
     private playerDataGrabber: PlayerDataGrabber
+    private uiEngineCommunicator: UiEngineCommunicator
 
     private combatInstance: Instance
     
@@ -141,6 +143,7 @@ export class CombatEngine {
         this.player = createPlayer(this.coordinator)
         this.inputQueue = new CombatInputQueue(this.coordinator)
         this.playerDataGrabber = new PlayerDataGrabber(this.coordinator, this.player, this.inputQueue)
+        this.uiEngineCommunicator = new UiEngineCommunicator(this.coordinator, this.player, this.inputQueue)
 
         const testItem = createTestItem(this.coordinator)
         const playerInventory = this.coordinator.getComponent<InventoryComponent>(this.player, ComponentTypes.Inventory)
@@ -148,7 +151,7 @@ export class CombatEngine {
        
         this.uiElements = createUIElements(this.camera, this.playerDataGrabber)
 
-        this.newUiElements = createNewUIElements(this.playerDataGrabber, this.camera)
+        this.newUiElements = createNewUIElements(this.uiEngineCommunicator, this.camera)
         
     }
 
@@ -271,6 +274,8 @@ export class CombatEngine {
         this.homingProjectileSystem.tick()
         this.attackCooldownSystem.tick()
         this.attackCommandSystem.tick()
+
+        this.uiEngineCommunicator.tick()
 
         this.renderSystem.tick()
 
