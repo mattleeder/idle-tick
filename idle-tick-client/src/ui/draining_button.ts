@@ -1,6 +1,6 @@
 import type { ScreenPosition } from "../position";
 import { CircularUIElement } from "./circular_ui_element";
-import type { InteractiveUiElementStateKeys, InteractiveElementDebugInfo, IInteractiveUiElement } from "./interactive_element";
+import type { InteractiveElementDebugInfo, IInteractiveUiElement, InteractiveUiElementStateImages } from "./interactive_element";
 
 export class DrainingButton extends CircularUIElement {
     private getStat: () => {numerator: number, denominator: number}
@@ -10,8 +10,8 @@ export class DrainingButton extends CircularUIElement {
         isClickable: boolean,
         elementPosition: ScreenPosition,
         radius: number,
-        iconRecord: Record<InteractiveUiElementStateKeys, HTMLImageElement | undefined>,
-        backgroundRecord: Record<InteractiveUiElementStateKeys, HTMLImageElement | undefined>,
+        iconRecord: InteractiveUiElementStateImages,
+        backgroundRecord: InteractiveUiElementStateImages,
         debugInfo: InteractiveElementDebugInfo,
         getStat: () => {numerator: number, denominator: number},
         children: IInteractiveUiElement[] = []

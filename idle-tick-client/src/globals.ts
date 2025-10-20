@@ -16,6 +16,7 @@ export const MAX_SYSTEMS = 64
 export const INVENTORY_SIZE = 28
 export const INVENTORY_COLUMNS = 4
 export const INVENTORY_ROWS = 7
+export const INVENTORY_BUTTON_FLASH_DURATION_MS = 200
 
 // Images
 export const protectFromMagicIcon = new Image()

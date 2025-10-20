@@ -9,11 +9,11 @@ import { StaminaSystem, MovementSystem, AnimationSystem, DamageReceiverSystem, S
 import { type Entity, ComponentTypes } from "./ecs_types";
 import { TILE_SIZE_PIXELS, TICK_RATE_MS, MOUSE_SENSITIVITY } from "./globals";
 import { WaveTestInstance, type Instance } from "./instance";
+import { createNewUIElements } from "./new_combat_ui";
 import { pathingBFS } from "./pathing";
 import { ScreenPosition, WorldPosition } from "./position";
 import { TileMap, } from "./tile_maps";
 import type { IInteractiveUiElement } from "./ui/interactive_element";
-import { testSquareButton } from "./ui/square_ui_element";
 import { createPlayer, createTestItem, npcWasClicked } from "./utilities";
 
 export class CombatEngine {
@@ -148,7 +148,7 @@ export class CombatEngine {
        
         this.uiElements = createUIElements(this.camera, this.playerDataGrabber)
 
-        this.newUiElements = [testSquareButton]
+        this.newUiElements = createNewUIElements(this.playerDataGrabber, this.camera)
         
     }
 
@@ -308,6 +308,7 @@ export class CombatEngine {
         }
 
         for (const element of this.newUiElements) {
+            // console.log(element)
             element.draw(this.ctx)
         }
     }

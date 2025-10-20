@@ -1,7 +1,7 @@
 import type { PlayerDataGrabber } from "../access_player_data"
 import type { Resolution } from "../camera"
 import type { ScreenPosition } from "../position"
-import type { InteractiveUiElementStateKeys, InteractiveElementDebugInfo, IInteractiveUiElement } from "./interactive_element"
+import type { InteractiveElementDebugInfo, IInteractiveUiElement, InteractiveUiElementStateImages } from "./interactive_element"
 import { RibbonMenu } from "./ui_group"
 
 export class PrayerMenu extends RibbonMenu {
@@ -12,8 +12,8 @@ export class PrayerMenu extends RibbonMenu {
         isClickable: boolean,
         elementPosition: ScreenPosition,
         elementSize: Resolution,
-        iconRecord: Record<InteractiveUiElementStateKeys, HTMLImageElement | undefined>,
-        backgroundRecord: Record<InteractiveUiElementStateKeys, HTMLImageElement | undefined>,
+        iconRecord: InteractiveUiElementStateImages,
+        backgroundRecord: InteractiveUiElementStateImages,
         playerDataGrabber: PlayerDataGrabber,
         debugInfo: InteractiveElementDebugInfo,
     ) {

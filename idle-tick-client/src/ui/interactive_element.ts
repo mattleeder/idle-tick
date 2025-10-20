@@ -171,7 +171,7 @@ export abstract class InteractiveElement<T> implements IInteractiveUiElement {
     }
 
     set elementPosition(newPosition: ScreenPosition) {
-        this.elementPosition = newPosition
+        this._elementPosition = newPosition
     }
 
     setElementSize(newSize: T) {

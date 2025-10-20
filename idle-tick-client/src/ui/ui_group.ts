@@ -1,6 +1,5 @@
-import type { Resolution } from "../camera";
 import type { ScreenPosition } from "../position";
-import type { InteractiveUiElementStateKeys, InteractiveElementDebugInfo, IInteractiveUiElement } from "./interactive_element";
+import type { InteractiveElementDebugInfo, IInteractiveUiElement } from "./interactive_element";
 import { SquareUiElement } from "./square_ui_element";
 
 export class UiGroup extends SquareUiElement {
@@ -8,22 +7,20 @@ export class UiGroup extends SquareUiElement {
         isActive: boolean,
         isClickable: boolean,
         elementPosition: ScreenPosition,
-        elementSize: Resolution,
-        iconRecord: Record<InteractiveUiElementStateKeys, HTMLImageElement | undefined>,
-        backgroundRecord: Record<InteractiveUiElementStateKeys, HTMLImageElement | undefined>,
         debugInfo: InteractiveElementDebugInfo,
         children: IInteractiveUiElement[] = [],
     ) {
-        super(isActive, isClickable, elementPosition, elementSize, iconRecord, backgroundRecord, debugInfo, children)
+        const elementSize = {width: 0, height: 0}
+        super(isActive, isClickable, elementPosition, elementSize, debugInfo, children)
     }
 
     get elementPosition() {
-        return this.elementPosition
+        return super.elementPosition
     }
 
     set elementPosition(newScreenPosition: ScreenPosition) {
         const difference = newScreenPosition.sub(this.elementPosition)
-        this.elementPosition = newScreenPosition
+        super.elementPosition = newScreenPosition
         this.offsetChildPositions(difference)
         
     }
@@ -38,5 +35,8 @@ export class UiGroup extends SquareUiElement {
 
     addChild(child: IInteractiveUiElement) {
         this.children.push(child)
+        const childCurrentPosition = child.elementPosition
+        const childOffsetPosition = this.elementPosition.add(childCurrentPosition)
+        child.elementPosition = childOffsetPosition
     }
 }

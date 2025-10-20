@@ -3,7 +3,7 @@ import type { Resolution } from "../camera"
 import type { PlayerEquipmentComponent } from "../ecs_components"
 import type { Entity, EquipmentSlotKeys } from "../ecs_types"
 import type { ScreenPosition } from "../position"
-import type { InteractiveUiElementStateKeys, InteractiveElementDebugInfo, IInteractiveUiElement } from "./interactive_element"
+import type { InteractiveElementDebugInfo, IInteractiveUiElement, InteractiveUiElementStateImages } from "./interactive_element"
 import { RibbonMenu } from "./ui_group"
 
 export class EquipmentMenu extends RibbonMenu {
@@ -16,8 +16,8 @@ export class EquipmentMenu extends RibbonMenu {
         isClickable: boolean,
         elementPosition: ScreenPosition,
         elementSize: Resolution,
-        iconRecord: Record<InteractiveUiElementStateKeys, HTMLImageElement | undefined>,
-        backgroundRecord: Record<InteractiveUiElementStateKeys, HTMLImageElement | undefined>,
+        iconRecord: InteractiveUiElementStateImages,
+        backgroundRecord: InteractiveUiElementStateImages,
         uiSlotMap: Record<EquipmentSlotKeys, {ui: IInteractiveUiElement, defaultIcon: HTMLImageElement}>,
         playerDataGrabber: PlayerDataGrabber,
         debugInfo: InteractiveElementDebugInfo,

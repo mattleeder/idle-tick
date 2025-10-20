@@ -1,4 +1,5 @@
 import type { ProcessedInput } from "../combat_engine";
+import type { ScreenPosition } from "../position";
 import { type IInteractiveUiElement, type uiCallbackFn } from "./interactive_element";
 
 export class ControlledUiElement implements IInteractiveUiElement {
@@ -18,12 +19,16 @@ export class ControlledUiElement implements IInteractiveUiElement {
         this.activeElement.isActive = isActive
     }
 
-    get activeElement() {
-        return this._activeElement
-    }
-
     get elementPosition() {
         return this.activeElement.elementPosition
+    }
+
+    set elementPosition(newPosition: ScreenPosition) {
+        this.activeElement.elementPosition = newPosition
+    }
+
+    get activeElement() {
+        return this._activeElement
     }
 
     set activeElement(newActiveElement: IInteractiveUiElement) {
@@ -32,9 +37,10 @@ export class ControlledUiElement implements IInteractiveUiElement {
         }
 
         this.activeElement.isActive = false
-        this.activeElement = newActiveElement
+        this._activeElement = newActiveElement
         this.activeElement.isActive = true
         
+        console.log("Active changed!")
         for (const callbackFn of this.onActiveChangeListeners) {
             callbackFn()
         }
