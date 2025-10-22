@@ -140,11 +140,6 @@ export class DamageCalculator {
                 break;
         }
 
-        console.log(defensiveStats)
-        console.log(`effectiveLevel: ${effectiveLevel}`)
-        console.log(`prayerEffect: ${prayerEffect}`)
-        console.log(`defenceBonus: ${defenceBonus}`)
-
         effectiveLevel = effectiveLevel * prayerEffect + 8
 
         return effectiveLevel * (defenceBonus + 64)

@@ -1,7 +1,9 @@
 import type { CombatUIData } from "./access_player_data";
+import type { CombatEngine } from "./combat_engine";
 import type { AttackData, CombatInputQueue, MoveData, PrayerChangeData } from "./combat_input_queue";
 import type { Coordinator } from "./ecs";
-import type { InventoryComponent, PlayerEquipmentComponent, ItemDetailsComponent, HealthComponent, StaminaComponent, PrayerComponent } from "./ecs_components";
+import { type InventoryComponent, type PlayerEquipmentComponent, type ItemDetailsComponent, type HealthComponent, type StaminaComponent, type PrayerComponent, type MovementComponent } from "./ecs_components";
+import { StaminaSystem } from "./ecs_systems";
 import { ComponentTypes, type Entity, type EquipmentSlotKeys, type PrayerKeys } from "./ecs_types";
 import { INVENTORY_SIZE } from "./globals";
 import type { uiCallbackFn } from "./ui/interactive_element";
@@ -9,6 +11,7 @@ import { arraysAreEqual } from "./utilities";
 
 export class UiEngineCommunicator {
     private coordinator: Coordinator
+    private engine: CombatEngine
     private playerEntity: Entity
     private inputQueue: CombatInputQueue
 
@@ -19,9 +22,11 @@ export class UiEngineCommunicator {
     private playerInventoryChangeListeners: uiCallbackFn[]
     private playerEquipmentChangeListeners: uiCallbackFn[]
     private playerPrayerChangeListeners: uiCallbackFn[]
+    private playerStaminaAtZeroListeners: uiCallbackFn[]
 
-    constructor(coordinator: Coordinator, playerEntity: Entity, inputQueue: CombatInputQueue) {
+    constructor(coordinator: Coordinator, engine: CombatEngine, playerEntity: Entity, inputQueue: CombatInputQueue) {
         this.playerEntity = playerEntity
+        this.engine = engine
         this.coordinator = coordinator
         this.inputQueue = inputQueue
 
@@ -44,6 +49,7 @@ export class UiEngineCommunicator {
         this.playerInventoryChangeListeners = []
         this.playerEquipmentChangeListeners = []
         this.playerPrayerChangeListeners = []
+        this.playerStaminaAtZeroListeners = []
     }
 
     onPlayerInventoryChange(callbackFn: uiCallbackFn) {
@@ -56,6 +62,10 @@ export class UiEngineCommunicator {
 
     onPlayerActivePrayerChange(callbackFn: uiCallbackFn) {
         this.playerPrayerChangeListeners.push(callbackFn)
+    }
+
+    onPlayerZeroStamina(callbackFn: uiCallbackFn) {
+        this.playerStaminaAtZeroListeners.push(callbackFn)
     }
 
     tick() {
@@ -84,6 +94,13 @@ export class UiEngineCommunicator {
         if (newPlayerPrayer != this.playerCurrentActivePrayers) {
             this.playerCurrentActivePrayers = new Set(newPlayerPrayer)
             for (const callbackFn of this.playerPrayerChangeListeners) {
+                callbackFn()
+            }
+        }
+
+        const playerStaminaComponent = this.coordinator.getComponent<StaminaComponent>(this.playerEntity, ComponentTypes.Stamina)
+        if (playerStaminaComponent.currentStaminaPoints <= 0) {
+            for (const callbackFn of this.playerStaminaAtZeroListeners) {
                 callbackFn()
             }
         }
@@ -232,5 +249,23 @@ export class UiEngineCommunicator {
 
     getCameraBaseTileSize() {
         return this.coordinator.camera.baseTileSize
+    }
+
+    isPlayerRunning() {
+        const staminaComponent = this.coordinator.getComponent<StaminaComponent>(this.playerEntity, ComponentTypes.Stamina)
+        return staminaComponent.isRunning
+    }
+
+    turnOffRun() {
+        const staminaComponent = this.coordinator.getComponent<StaminaComponent>(this.playerEntity, ComponentTypes.Stamina)
+        const movementComponent = this.coordinator.getComponent<MovementComponent>(this.playerEntity, ComponentTypes.Movement)
+        StaminaSystem.turnOffRun(staminaComponent, movementComponent)
+        
+    }
+
+    turnOnRun() {
+        const staminaComponent = this.coordinator.getComponent<StaminaComponent>(this.playerEntity, ComponentTypes.Stamina)
+        const movementComponent = this.coordinator.getComponent<MovementComponent>(this.playerEntity, ComponentTypes.Movement)
+        StaminaSystem.turnOnRun(staminaComponent, movementComponent)
     }
 }

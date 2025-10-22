@@ -2,6 +2,7 @@ import { DamageCalculator, DamageSubTypes } from "./damage_calculator";
 import type { Coordinator } from "./ecs";
 import { type ArmourComponent, type DefensiveStatsComponent, type DamageReceiverComponent, type HealthComponent, type HitSplatComponent, type InventoryComponent, type ItemDetailsComponent, type ModelComponent, type MovementComponent, type OffsensiveStatsComponent, type PlayerEquipmentComponent, type PrayerComponent, type StaminaComponent, type TransformComponent, type HomingProjectileComponent, type PathingComponent, type PlayerComponent } from "./ecs_components";
 import { ComponentTypes, EquipmentSlots, InventoryUseType, type Entity } from "./ecs_types";
+import { PLAYER_WALK_SPEED } from "./globals";
 import { getNpcPathToPlayer, pathingBFS } from "./pathing";
 import { WorldPosition } from "./position";
 import type { TileMap } from "./tile_maps";
@@ -304,7 +305,8 @@ export function createPlayer(coordinator: Coordinator) {
         animationHasEnded: false,
     })
     coordinator.addComponent<MovementComponent>(player, ComponentTypes.Movement, {
-        moveSpeed: 2,
+        baseMoveSpeed: PLAYER_WALK_SPEED,
+        currentMoveSpeed: PLAYER_WALK_SPEED * 2,
         movementPath: [],
         renderTimeInTicks: 0.5,
         movementRenderData: [],
@@ -427,7 +429,6 @@ export function playerAttackTarget(coordinator: Coordinator, playerEntity: Entit
     const playerDefenceRollType = getPlayerDefenceRollType(coordinator, playerEntity)
 
     const damage = DamageCalculator.calculateDamage(playerOffensiveStatsComponent, targetDefensiveStatsComponent, playerAttackRollType, playerDefenceRollType)
-    console.log(`Player did ${damage} damage`)
     createTestProjectile(coordinator, playerEntity, targetEntity, damage)
 
     playerOffensiveStatsComponent.ticksUntilCanAttack += playerOffensiveStatsComponent.attackCooldown
@@ -478,7 +479,8 @@ export function shuffleArray<T>(array: T[]): T[] {
 
 export function addStandardMonsterMovementComponentToEntity(coordinator: Coordinator, entity: Entity) {
     coordinator.addComponent<MovementComponent>(entity, ComponentTypes.Movement, {
-        moveSpeed: 1,
+        baseMoveSpeed: 1,
+        currentMoveSpeed: 1,
         movementPath: [],
         renderTimeInTicks: 0.5,
         movementRenderData: [],

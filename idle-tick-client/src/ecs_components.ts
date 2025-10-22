@@ -8,7 +8,8 @@ export interface PlayerComponent {
 }
 
 export interface MovementComponent {
-    moveSpeed: number,
+    baseMoveSpeed: number,
+    currentMoveSpeed: number,
     movementPath: WorldPosition[]
     renderTimeInTicks: number
     movementRenderData: MovementRenderData[]

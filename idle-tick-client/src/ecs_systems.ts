@@ -5,7 +5,7 @@ import { type TransformComponent, type MovementComponent, type StaminaComponent,
 import { type Entity, type Signature, SystemTypes, ComponentTypes, InventoryUseType, type EquipmentSlotKeys, type PrayerKeys } from "./ecs_types"
 import { INVENTORY_SIZE, MAX_SYSTEMS, TICK_RATE_MS } from "./globals"
 import { WorldPosition } from "./position"
-import { calculateLosBetweenTwoTiles, getActualCentreOfTransform, getAllEdgeTiles, getAllTiles, getPlayerEntityId } from "./utilities"
+import { calculateLosBetweenTwoTiles, getAllEdgeTiles, getAllTiles, getPlayerEntityId } from "./utilities"
 
 // Movement System
 // What does it do
@@ -70,7 +70,7 @@ export class MovementSystem extends System {
     processMovement(transformComponent: TransformComponent, movementComponent: MovementComponent) {
         const oldTiles = getAllTiles(transformComponent)
         this.coordinator.getEngine().unblockTiles(oldTiles)
-        for (let i = 0; i < movementComponent.moveSpeed; i++) {
+        for (let i = 0; i < movementComponent.currentMoveSpeed; i++) {
             transformComponent.actualNorthWestPosition = movementComponent.movementPath.shift() || transformComponent.actualNorthWestPosition
         }
         const newTiles = getAllTiles(transformComponent)
@@ -143,13 +143,23 @@ export class StaminaSystem extends System {
             if (staminaComponent.isRunning && movementComponent.movementPath.length > 0) {
                 staminaComponent.currentStaminaPoints = Math.max(0, staminaComponent.currentStaminaPoints - 1)
                 if (staminaComponent.currentStaminaPoints <= 0) {
-                    staminaComponent.isRunning = false
+                    StaminaSystem.turnOffRun(staminaComponent, movementComponent)
                 }
             } else {
                 staminaComponent.currentStaminaPoints = Math.min(staminaComponent.maxStaminaPoints, staminaComponent.currentStaminaPoints + staminaComponent.staminaRegenRate)
             }
 
         }
+    }
+
+    static turnOffRun(staminaComponent: StaminaComponent, movementComponent: MovementComponent) {
+        staminaComponent.isRunning = false
+        movementComponent.currentMoveSpeed = movementComponent.baseMoveSpeed 
+    }
+
+    static turnOnRun(staminaComponent: StaminaComponent, movementComponent: MovementComponent) {
+        staminaComponent.isRunning = true
+        movementComponent.currentMoveSpeed = 2 * movementComponent.baseMoveSpeed 
     }
 }
 
@@ -292,7 +302,6 @@ export class SimpleBehaviourSystem extends System {
             // If in range add attack command component
             // Could add some kind of state to the behaviour componenet
 
-            console.log("Adding attack command")
             this.coordinator.addComponent<AttackCommandComponent>(entity, ComponentTypes.AttackCommand, {target: playerEntityID})
             this.coordinator.removeComponent(entity, ComponentTypes.SimpleBehaviour)
         }
@@ -506,10 +515,6 @@ export class PlayerEquipmentSystem extends System {
         const equipSlotKey = armourComponent.equipSlots[0]
         playerEquipmentComponent[equipSlotKey] = itemEntity
         playerInventoryComponent.slots[itemIndex] = null
-
-        console.log("EQUIPPING")
-
-        console.log(playerEquipmentComponent)
     }
 
     tryToUnEquip(playerEntity: Entity, slot: EquipmentSlotKeys) {
@@ -530,10 +535,6 @@ export class PlayerEquipmentSystem extends System {
 
         playerInventoryComponent.slots[inventorySpace] = playerEquipmentComponent[slot]
         playerEquipmentComponent[slot] = null
-
-        console.log("UNEQUIPPING")
-
-        console.log(playerEquipmentComponent)
     }
 }
 
@@ -572,8 +573,6 @@ export class PrayerSystem extends System {
             prayerComponent.activePrayers.clear()
             prayerComponent.activePrayers.add(prayer)
         }
-
-        console.log(prayerComponent)
     }
 }
 
@@ -654,7 +653,6 @@ export class AttackCommandSystem extends System {
 
     tick(): void {
         for (const entity of this.entities) {
-            console.log("Attack command tick")
             const attackerTransformComponent = this.coordinator.getComponent<TransformComponent>(entity, ComponentTypes.Transform)
             const movementComponent = this.coordinator.getComponent<MovementComponent>(entity, ComponentTypes.Movement)
             const offensiveStatsComponent = this.coordinator.getComponent<OffsensiveStatsComponent>(entity, ComponentTypes.OffensiveStats)

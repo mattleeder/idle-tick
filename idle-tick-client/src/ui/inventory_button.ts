@@ -43,12 +43,10 @@ export class InventoryButton extends TwoStateSquareButton {
         this.uiEngineCommunicator.onPlayerInventoryChange(() => {
             const newItemEntity = this.uiEngineCommunicator.playerCurrentInventory[this.inventoryButtonData.slotNumber]
             if (newItemEntity == this.itemEntity) {
-                console.log("Item unchanged")
                 return
             }
             this.itemEntity = newItemEntity
             if (newItemEntity === null) {
-                console.log("Item is null")
                 const emptyEquipSlot = new Image()
                 emptyEquipSlot.src = "src/assets/empty_equip_slot.png"
                 this.unClickedIcon = emptyEquipSlot

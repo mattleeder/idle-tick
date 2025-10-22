@@ -1,5 +1,5 @@
 import type { ScreenPosition } from "../position";
-import type { InteractiveElementDebugInfo, IInteractiveUiElement, InteractiveUiElementStateImages } from "./interactive_element";
+import type { InteractiveElementDebugInfo } from "./interactive_element";
 import { TwoStateCircularButton } from "./two_state_circular_button";
 
 export class DrainingButton extends TwoStateCircularButton {

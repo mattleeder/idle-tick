@@ -1,4 +1,3 @@
-import { PlayerDataGrabber } from "./access_player_data";
 import { Camera } from "./camera";
 import { CombatInputQueue } from "./combat_input_queue";
 import { Coordinator } from "./ecs";
@@ -139,8 +138,7 @@ export class CombatEngine {
         // Player
         this.player = createPlayer(this.coordinator)
         this.inputQueue = new CombatInputQueue(this.coordinator)
-        this.playerDataGrabber = new PlayerDataGrabber(this.coordinator, this.player, this.inputQueue)
-        this.uiEngineCommunicator = new UiEngineCommunicator(this.coordinator, this.player, this.inputQueue)
+        this.uiEngineCommunicator = new UiEngineCommunicator(this.coordinator, this, this.player, this.inputQueue)
 
         const testItem = createTestItem(this.coordinator)
         const playerInventory = this.coordinator.getComponent<InventoryComponent>(this.player, ComponentTypes.Inventory)

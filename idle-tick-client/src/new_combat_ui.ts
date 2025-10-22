@@ -1,4 +1,3 @@
-import { PlayerDataGrabber } from "./access_player_data";
 import type { Camera, Resolution } from "./camera";
 import type { EquipmentSlotKeys, PrayerKeys } from "./ecs_types";
 import { INVENTORY_COLUMNS, INVENTORY_ROWS, INVENTORY_SIZE, protectFromMagicIcon, protectFromMeleeIcon, protectFromRangedIcon } from "./globals";
@@ -12,6 +11,7 @@ import { InventoryButton } from "./ui/inventory_button";
 import { PrayerButton, type PrayerButtonData } from "./ui/prayer_button";
 import { RibbonButton } from "./ui/ribbon_button";
 import { SquareUiElement } from "./ui/square_ui_element";
+import { ClickStates } from "./ui/two_state_circular_button";
 import { UiGroup } from "./ui/ui_group";
 import { UiEngineCommunicator } from "./ui_engine_communicator";
 
@@ -37,8 +37,11 @@ combatIconImage.src = "src/assets/combaticon.png"
 const staminaIconImage = new Image()
 staminaIconImage.src = "src/assets/staminaicon.png"
 
-const staminaBackgroundImage = new Image()
-staminaBackgroundImage.src = "src/assets/stamina_background.png"
+const staminaUnclickedBackgroundImage = new Image()
+staminaUnclickedBackgroundImage.src = "src/assets/stamina_background.png"
+
+const staminaClickedBackgroundImage = new Image()
+staminaClickedBackgroundImage.src = "src/assets/stamina_background_clicked.png"
 
 const transparentBackground = new Image()
 transparentBackground.src = "src/assets/transparent_background.png"
@@ -124,10 +127,30 @@ export function createNewUIElements(uiEngineCommunicator: UiEngineCommunicator, 
     const prayer = new DrainingButton(true, new ScreenPosition(camera.resolution.width * 0.8, camera.resolution.height * 0.1), 32, prayerIconImage, prayerIconImage, prayerBackgroundImage, prayerBackgroundImage, {name: "prayerTopButton"}, () => getPrayerData())
     const health = new DrainingButton(true, new ScreenPosition(camera.resolution.width * 0.7, camera.resolution.height * 0.1), 32, healthIconImage, healthIconImage, healthBackgroundImage, healthBackgroundImage, {name: "healthTopButton"}, () => getHealthData())
     const specialAttack = new DrainingButton(true, new ScreenPosition(camera.resolution.width * 0.6, camera.resolution.height * 0.1), 32, combatIconImage, combatIconImage, specialAttackBackgroundImage, specialAttackBackgroundImage, {name: "specialAttackTopButton"}, () => getSpecialAttackData())
-    const stamina = new DrainingButton(true, new ScreenPosition(camera.resolution.width * 0.5, camera.resolution.height * 0.1), 32, staminaIconImage, staminaIconImage, staminaBackgroundImage, staminaBackgroundImage, {name: "staminaTopButton"}, () => getStaminaData())
+    const stamina = new DrainingButton(true, new ScreenPosition(camera.resolution.width * 0.5, camera.resolution.height * 0.1), 32, staminaIconImage, staminaIconImage, staminaUnclickedBackgroundImage, staminaClickedBackgroundImage, {name: "staminaTopButton"}, () => getStaminaData())
 
+
+    // @TODO: some weird double clicking issue going on
+    stamina.clickState = uiEngineCommunicator.isPlayerRunning() ? ClickStates.Clicked : ClickStates.UnClicked
+    console.log(`Player is running: ${uiEngineCommunicator.isPlayerRunning()}, stamina click state: ${stamina.clickState}`)
     stamina.onMouseClick(() => {
-        uiEngineCommunicator.toggleRun()
+        stamina.toggleClickState()
+        switch(stamina.clickState) {
+            case ClickStates.Clicked:
+                console.log("Turning Run On")
+                uiEngineCommunicator.turnOnRun()
+                break;
+
+            case ClickStates.UnClicked:
+                console.log("Turning Run Off")
+                uiEngineCommunicator.turnOffRun()
+                break;
+        }
+    })
+
+    uiEngineCommunicator.onPlayerZeroStamina(() => {
+        uiEngineCommunicator.turnOffRun()
+        stamina.clickState = ClickStates.UnClicked
     })
     
     const ribbonButtonDimensions = {width: camera.resolution.width * 0.05, height: camera.resolution.height * 0.05}
@@ -252,9 +275,6 @@ export function createNewUIElements(uiEngineCommunicator: UiEngineCommunicator, 
     ribbonGroup.addChild(prayerMenuGroup)
     ribbonGroup.addChild(spellsMenuButton)
     ribbonGroup.addChild(spellsMenuGroup)
-
-    console.log(compass.elementPosition)
-    console.log(compass.elementSize)
 
     return [
         compass,

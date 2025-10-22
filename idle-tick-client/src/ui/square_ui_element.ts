@@ -27,7 +27,6 @@ export class SquareUiElement extends InteractiveElement<Resolution> {
     }
     
     mouseWithinBoundary(mousePositionX: number, mousePositionY: number): boolean {
-        // console.log(`Check boundary, mouse: ${mousePositionX},${mousePositionY}, element: ${this.elementPosition.x},${this.elementPosition.y}`)
         if (!(this.isActive)) {
             return false
         }

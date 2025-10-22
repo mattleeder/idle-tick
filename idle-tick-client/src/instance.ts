@@ -40,7 +40,6 @@ export class WaveTestInstance extends Instance {
     private currentCooldown: number
     private waveFinished: boolean
     private spawnPoints: WorldPosition[]
-    private npcs: Entity[]
     private waveMonsters: Record<number, Record<WaveSpawnKeys, number>> = {
         1: {
             batMonster: 1,
@@ -127,7 +126,6 @@ export class WaveTestInstance extends Instance {
         
         if (this.waveFinished) {
             this.currentCooldown = Math.max(this.currentCooldown - 1, 0)
-            console.log(`Wave Starting in ${this.currentCooldown} ticks`)
             if (this.currentCooldown <= 0) {
                 this.startWave(this.wave)
             }
