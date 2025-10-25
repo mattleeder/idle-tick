@@ -1,19 +1,20 @@
 import { Camera } from "./camera";
 import { CombatInputQueue } from "./combat_input_queue";
 import { Coordinator } from "./ecs";
-import { type TransformComponent, type StaminaComponent, type MovementComponent, type ModelComponent, type HealthComponent, type DamageReceiverComponent, type HitSplatComponent, type SimpleBehaviourComponent, type OffsensiveStatsComponent, type HomingProjectileComponent, type InventoryComponent, type ItemDetailsComponent, type PlayerEquipmentComponent, type ArmourComponent, type PrayerComponent, type DefensiveStatsComponent, type AttackCommandComponent, type PathingComponent, type PlayerComponent } from "./ecs_components";
+import { type TransformComponent, type StaminaComponent, type MovementComponent, type ModelComponent, type HealthComponent, type DamageReceiverComponent, type HitSplatComponent, type SimpleBehaviourComponent, type OffsensiveStatsComponent, type HomingProjectileComponent, type InventoryComponent, type ItemDetailsComponent, type PlayerEquipmentComponent, type PrayerComponent, type DefensiveStatsComponent, type AttackCommandComponent, type PathingComponent, type PlayerComponent } from "./ecs_components";
 import { ModelRenderSystem, HitSplatRenderSystem, HealthBarRenderSystem, PrayerRenderSystem } from "./ecs_render_systems";
 import { StaminaSystem, MovementSystem, AnimationSystem, DamageReceiverSystem, SimpleBehaviourSystem, HomingProjectileSystem, InventorySystem, PlayerEquipmentSystem, PrayerSystem, AttackCooldownSystem, AttackCommandSystem } from "./ecs_systems";
 import { type Entity, ComponentTypes } from "./ecs_types";
-import { TILE_SIZE_PIXELS, TICK_RATE_MS, MOUSE_SENSITIVITY } from "./globals";
+import { TILE_SIZE_PIXELS, TICK_RATE_MS, MOUSE_SENSITIVITY, ITEMS } from "./globals";
 import { WaveTestInstance, type Instance } from "./instance";
+import { createItem } from "./item_options";
 import { createNewUIElements } from "./new_combat_ui";
 import { pathingBFS } from "./pathing";
 import { ScreenPosition, WorldPosition } from "./position";
 import { TileMap, } from "./tile_maps";
 import type { IInteractiveUiElement } from "./ui/interactive_element";
 import { UiEngineCommunicator } from "./ui_engine_communicator";
-import { createPlayer, createTestItem, npcWasClicked } from "./utilities";
+import { createPlayer, npcWasClicked } from "./utilities";
 
 export class CombatEngine {
     private canvas: HTMLCanvasElement;
@@ -24,7 +25,7 @@ export class CombatEngine {
     private lastTime = 0;
     private timeSinceLastTick = 0;
     private frameCount = 0;
-    private newUiElements: IInteractiveUiElement[];
+    newUiElements: IInteractiveUiElement[];
     private player: Entity;
     private playerCurentRawInput: RawInput;
     private playerPreviousRawInput: RawInput;
@@ -112,7 +113,6 @@ export class CombatEngine {
         this.coordinator.registerComponent<InventoryComponent>(ComponentTypes.Inventory)
         this.coordinator.registerComponent<ItemDetailsComponent>(ComponentTypes.ItemDetails)
         this.coordinator.registerComponent<PlayerEquipmentComponent>(ComponentTypes.PlayerEquipment)
-        this.coordinator.registerComponent<ArmourComponent>(ComponentTypes.Armour)
         this.coordinator.registerComponent<PrayerComponent>(ComponentTypes.Prayer)
         this.coordinator.registerComponent<AttackCommandComponent>(ComponentTypes.AttackCommand)
         this.coordinator.registerComponent<PathingComponent>(ComponentTypes.Pathing)
@@ -140,9 +140,21 @@ export class CombatEngine {
         this.inputQueue = new CombatInputQueue(this.coordinator)
         this.uiEngineCommunicator = new UiEngineCommunicator(this.coordinator, this, this.player, this.inputQueue)
 
-        const testItem = createTestItem(this.coordinator)
+        const twistedBow = createItem(this.coordinator, ITEMS.TwistedBow)
+        const fortifiedMasoriBody = createItem(this.coordinator, ITEMS.FortifiedMasoriBody)
+        const fortifiedMasoriChaps = createItem(this.coordinator, ITEMS.FortifiedMasoriChaps)
+        const healthPotion = createItem(this.coordinator, ITEMS.HealthPotionFourDose)
+        const prayerPotion = createItem(this.coordinator, ITEMS.PrayerPotionFourDose)
+        const healthPotionFirstTwoDose = createItem(this.coordinator, ITEMS.HealthPotionTwoDose)
+        const healthPotionSecondTwoDose = createItem(this.coordinator, ITEMS.HealthPotionTwoDose)
         const playerInventory = this.coordinator.getComponent<InventoryComponent>(this.player, ComponentTypes.Inventory)
-        playerInventory.slots[0] = testItem
+        playerInventory.slots[0] = twistedBow
+        playerInventory.slots[1] = fortifiedMasoriBody
+        playerInventory.slots[2] = fortifiedMasoriChaps
+        playerInventory.slots[3] = healthPotion
+        playerInventory.slots[4] = prayerPotion
+        playerInventory.slots[5] = healthPotionFirstTwoDose
+        playerInventory.slots[6] = healthPotionSecondTwoDose
        
         this.newUiElements = createNewUIElements(this.uiEngineCommunicator, this.camera)
         
@@ -245,6 +257,11 @@ export class CombatEngine {
             this.playerEquipmentSystem.tryToEquip(this.player, equipChange.itemEntityToEquip)
         }
         this.inputQueue.clearEquipmentChange()
+        if (this.inputQueue.queuedConsumable !== null) {
+            const consumeData = this.inputQueue.queuedConsumable
+            this.inventorySystem.consumeItem(this.player, consumeData.itemEntity, consumeData.invetoryPosition, consumeData.consumeFunction)
+            this.inputQueue.clearConsumeItem()
+        }
 
         const attackData = this.inputQueue.queuedAttack 
         if (attackData !== null) {

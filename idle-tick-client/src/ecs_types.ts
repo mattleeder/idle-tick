@@ -19,7 +19,6 @@ export const ComponentTypes = {
     Inventory:          "inventory",
     ItemDetails:        "itemDetails",
     PlayerEquipment:    "playerEquipment",
-    Armour:             "armour",
     Prayer:             "prayer",
     AttackCommand:      "attackCommand",
     Pathing:            "pathing",
@@ -79,12 +78,3 @@ const equipmentSlotValues = Object.values(EquipmentSlots) as EquipmentSlotKeys[]
 export function isEquipmentSlotKeys(value: unknown): value is EquipmentSlotKeys {
     return typeof value === 'string' && equipmentSlotValues.includes(value as EquipmentSlotKeys);
 }
-
-export const InventoryUseType = {
-    Eat:    "eat",
-    Drink:  "drink",
-    Equip:  "equip",
-    Use:    "use",
-}
-
-export type InventoryUseTypeKeys = typeof InventoryUseType[keyof typeof InventoryUseType]

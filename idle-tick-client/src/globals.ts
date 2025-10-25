@@ -33,3 +33,25 @@ protectFromRangedIcon.src = "src/assets/protect_from_ranged.png"
 
 export const protectFromMeleeIcon = new Image()
 protectFromMeleeIcon.src = "src/assets/protect_from_melee.png"
+
+// Item List
+
+export const ITEMS = {
+    TwistedBow:                 "twistedBow",
+    FortifiedMasoriBody:        "fortifiedMasoriBody",
+    FortifiedMasoriChaps:       "fortifiedMasoriChaps",
+    HealthPotionFourDose:       "healthPotionFourDose",
+    HealthPotionThreeDose:      "healthPotionThreeDose",
+    HealthPotionTwoDose:        "healthPotionTwoDose",
+    HealthPotionOneDose:        "healthPotionOneDose",
+    PrayerPotionFourDose:       "prayerPotionFourDose",
+    PrayerPotionThreeDose:      "prayerPotionThreeDose",
+    PrayerPotionTwoDose:        "prayerPotionTwoDose",
+    PrayerPotionOneDose:        "prayerPotionOneDose",
+    EmptyVial:                  "emptyVial",
+} as const
+
+export type ItemKeys = typeof ITEMS[keyof typeof ITEMS]
+
+export const ITEM_MODELS_LOCATION = "src/assets/item_models/"
+export const ITEM_MODELS_FILE_EXTENSION = ".png"

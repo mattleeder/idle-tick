@@ -30,6 +30,7 @@ export function CombatWindow() {
           <h1>Combat</h1>
           <div style={{width: `${canvasWidth}px`, height: `${canvasHeight}px`}}>
             <canvas
+              style={{"border": "solid black"}}
               width={`${canvasWidth}px`}
               height={`${canvasHeight}px`}
               ref={canvasRef}

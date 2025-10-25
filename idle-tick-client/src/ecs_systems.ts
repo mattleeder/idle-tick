@@ -1,8 +1,10 @@
 import { BitSet } from "./bitSet"
 import { clamp } from "./camera"
+import type { ConsumeFunction } from "./combat_input_queue"
 import { Coordinator, System } from "./ecs"
-import { type TransformComponent, type MovementComponent, type StaminaComponent, type ModelComponent, type HealthComponent, type DamageReceiverComponent, type HitSplatComponent, type OffsensiveStatsComponent, type HomingProjectileComponent, type InventoryComponent, type ItemDetailsComponent, type PlayerEquipmentComponent, type ArmourComponent, type PrayerComponent, type AttackCommandComponent, type PathingComponent } from "./ecs_components"
-import { type Entity, type Signature, SystemTypes, ComponentTypes, InventoryUseType, type EquipmentSlotKeys, type PrayerKeys } from "./ecs_types"
+import type { TransformComponent, MovementComponent, StaminaComponent, ModelComponent, HealthComponent, DamageReceiverComponent, HitSplatComponent, OffsensiveStatsComponent, HomingProjectileComponent, InventoryComponent, ItemDetailsComponent, PlayerEquipmentComponent, PrayerComponent, AttackCommandComponent, PathingComponent, DefensiveStatsComponent } from "./ecs_components"
+import { type Entity, type Signature, SystemTypes, ComponentTypes, type EquipmentSlotKeys, type PrayerKeys } from "./ecs_types"
+import { addEquipmentStatsToDefensiveStats, addEquipmentStatsToOffensiveStats, getEquipmentInformation, subtractEquipmentStatsFromDefensiveStats, subtractEquipmentStatsFromOffensiveStats } from "./equipment_map"
 import { INVENTORY_SIZE, MAX_SYSTEMS, TICK_RATE_MS } from "./globals"
 import { WorldPosition } from "./position"
 import { calculateLosBetweenTwoTiles, getAllEdgeTiles, getAllTiles, getPlayerEntityId } from "./utilities"
@@ -440,6 +442,18 @@ export class InventorySystem extends System {
         
         inventoryComponent.slots[itemIndex] = null
     }
+
+    consumeItem(inventoryEntity: Entity, itemEntity: Entity, inventoryPosition: number, consumeFunction: ConsumeFunction) {
+        const inventoryComponent = this.coordinator.getComponent<InventoryComponent>(inventoryEntity, ComponentTypes.Inventory)
+
+        if (inventoryComponent.slots[inventoryPosition] != itemEntity) {
+            console.warn(`item: ${itemEntity} has been moved from inventory slot ${inventoryPosition}`)
+            return
+        }
+
+        consumeFunction(this.coordinator, inventoryEntity)
+        console.log("Consumed")
+    }
 }
 
 export class PlayerEquipmentSystem extends System {
@@ -475,9 +489,10 @@ export class PlayerEquipmentSystem extends System {
         // Inventory must have space
 
         const itemDetailsComponent = this.coordinator.getComponent<ItemDetailsComponent>(itemEntity, ComponentTypes.ItemDetails)
-        const armourComponent = this.coordinator.getComponent<ArmourComponent>(itemEntity, ComponentTypes.Armour)
         const playerInventoryComponent = this.coordinator.getComponent<InventoryComponent>(playerEntity, ComponentTypes.Inventory)
         const playerEquipmentComponent = this.coordinator.getComponent<PlayerEquipmentComponent>(playerEntity, ComponentTypes.PlayerEquipment)
+        const playerOffensiveStatsComponent = this.coordinator.getComponent<OffsensiveStatsComponent>(playerEntity, ComponentTypes.OffensiveStats)
+        const playerDefensiveStatsComponent = this.coordinator.getComponent<DefensiveStatsComponent>(playerEntity, ComponentTypes.DefensiveStats)
 
         let itemIndex = -1
         let inventorySpaces = 0
@@ -491,41 +506,47 @@ export class PlayerEquipmentSystem extends System {
             }
         }
 
-        if (itemDetailsComponent.itemType != InventoryUseType.Equip) {
-            throw new Error(`cannot equip item of type ${itemDetailsComponent.itemType}`)
-        }
+        const equipmentInformation = getEquipmentInformation(itemDetailsComponent.itemKey)
 
         if (itemIndex == -1) {
             console.error(`itemEntity: ${itemEntity} not in player inventory`)
             return
         }
 
-
-        if (inventorySpaces < armourComponent.equipSlots.length) {
+        if (inventorySpaces < equipmentInformation.equipmentStats.equipSlots.length) {
             throw new Error(`only have ${inventorySpaces} spaces in inventory, cannot equip`)
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        for (const _equipSlot of armourComponent.equipSlots) {
+        for (const equipSlot of equipmentInformation.equipmentStats.equipSlots) {
             // @TODO: make unequip
             // Unequip
+            this.tryToUnEquip(playerEntity, equipSlot)
         }
 
         // Use first slot
-        const equipSlotKey = armourComponent.equipSlots[0]
+        const equipSlotKey = equipmentInformation.equipmentStats.equipSlots[0]
         playerEquipmentComponent[equipSlotKey] = itemEntity
         playerInventoryComponent.slots[itemIndex] = null
+
+        addEquipmentStatsToOffensiveStats(itemDetailsComponent.itemKey, playerOffensiveStatsComponent)
+        addEquipmentStatsToDefensiveStats(itemDetailsComponent.itemKey, playerDefensiveStatsComponent)
     }
 
     tryToUnEquip(playerEntity: Entity, slot: EquipmentSlotKeys) {
 
         const playerInventoryComponent = this.coordinator.getComponent<InventoryComponent>(playerEntity, ComponentTypes.Inventory)
         const playerEquipmentComponent = this.coordinator.getComponent<PlayerEquipmentComponent>(playerEntity, ComponentTypes.PlayerEquipment)
+        const playerOffensiveStatsComponent = this.coordinator.getComponent<OffsensiveStatsComponent>(playerEntity, ComponentTypes.OffensiveStats)
+        const playerDefensiveStatsComponent = this.coordinator.getComponent<DefensiveStatsComponent>(playerEntity, ComponentTypes.DefensiveStats)
+
+        const itemEntity = playerEquipmentComponent[slot]
         
-        if (playerEquipmentComponent[slot] == null) {
+        if (itemEntity === null) {
             console.error(`cannot unequip :${slot} as its empty`)
             return
         }
+
+        const itemDetailsComponent = this.coordinator.getComponent<ItemDetailsComponent>(itemEntity, ComponentTypes.ItemDetails)
 
         const inventorySpace = playerInventoryComponent.slots.findIndex((value) => value == null)
 
@@ -535,6 +556,9 @@ export class PlayerEquipmentSystem extends System {
 
         playerInventoryComponent.slots[inventorySpace] = playerEquipmentComponent[slot]
         playerEquipmentComponent[slot] = null
+
+        subtractEquipmentStatsFromOffensiveStats(itemDetailsComponent.itemKey, playerOffensiveStatsComponent)
+        subtractEquipmentStatsFromDefensiveStats(itemDetailsComponent.itemKey, playerDefensiveStatsComponent)
     }
 }
 

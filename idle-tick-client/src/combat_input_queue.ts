@@ -44,12 +44,12 @@ export interface UnequipData {
     slot: EquipmentSlotKeys
 }
 
-export interface PotionData {
+export type ConsumeFunction = (coordinator: Coordinator, consumingEntity: Entity) => void
 
-}
-
-export interface FoodData {
-
+export interface ConsumeData {
+    itemEntity: Entity,
+    invetoryPosition: number,
+    consumeFunction: ConsumeFunction,
 }
 
 export class CombatInputQueue {
@@ -61,8 +61,7 @@ export class CombatInputQueue {
     stackedPrayerChange: PrayerChangeData[];
     stackedEquipmentChange: EquipmentChangeData[];
     stackedUnequip: UnequipData[];
-    queuedPotion: PotionData | null;
-    queuedFood: FoodData | null;
+    queuedConsumable: ConsumeData | null
 
     constructor(coordinator: Coordinator) {
         this.coordinator = coordinator
@@ -73,8 +72,7 @@ export class CombatInputQueue {
         this.stackedPrayerChange = []
         this.stackedEquipmentChange = []
         this.stackedUnequip = []
-        this.queuedPotion = null
-        this.queuedFood = null
+        this.queuedConsumable = null
     }
 
     stackAttack() {
@@ -127,11 +125,11 @@ export class CombatInputQueue {
         this.stackedUnequip = []
     }
 
-    queueUsePotion() {
-
+    queueConsumeItem(consumeData: ConsumeData) {
+        this.queuedConsumable = consumeData
     }
 
-    queueEatFood() {
-
+    clearConsumeItem() {
+        this.queuedConsumable = null
     }
 }

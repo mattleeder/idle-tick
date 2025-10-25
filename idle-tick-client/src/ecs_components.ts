@@ -1,6 +1,7 @@
 import type { CombatEngine } from "./combat_engine"
 import type { Coordinator } from "./ecs"
-import type { Entity, EquipmentSlotKeys, InventoryUseTypeKeys, PrayerKeys } from "./ecs_types"
+import type { Entity, EquipmentSlotKeys, PrayerKeys } from "./ecs_types"
+import type { ItemKeys } from "./globals"
 import type { WorldPosition } from "./position"
 
 export interface PlayerComponent {
@@ -125,43 +126,7 @@ export interface InventoryComponent {
 }
 
 export interface ItemDetailsComponent {
-    name: string
-    description: string
-    icon: string
-    itemType: InventoryUseTypeKeys
-}
-
-export interface ArmourComponent {
-    attackLevelRequirement: number,
-    strengthLevelRequirement: number,
-    rangedLevelRequirement: number,
-    magicLevelRequirement: number,
-    defenceLevelRequirement: number,
-
-    stabAttackBonus: number,
-    slashAttackBonus: number,
-    crushAttackBonus:number,
-    rangedAttackBonus: number,
-    magicAttackBonus: number,
-
-    stabDefenceBonus: number,
-    slashDefenceBonus: number,
-    crushDefenceBonus:number,
-    rangedDefenceBonus: number,
-    magicDefenceBonus: number,
-
-    meleeStrengthBonus: number,
-    rangedStrengthBonus: number,
-    magicDamageBonus: number,
-    prayerBonus: number,
-
-    equipSlots: EquipmentSlotKeys[],
-}
-
-export interface WeaponComponent extends ArmourComponent {
-    attackCooldown: number,
-    attackRange: number,
-    specialAttack: string,
+    itemKey: ItemKeys
 }
 
 export interface FoodComponent {

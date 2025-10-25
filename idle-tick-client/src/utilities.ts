@@ -1,7 +1,7 @@
 import { DamageCalculator, DamageSubTypes } from "./damage_calculator";
 import type { Coordinator } from "./ecs";
-import { type ArmourComponent, type DefensiveStatsComponent, type DamageReceiverComponent, type HealthComponent, type HitSplatComponent, type InventoryComponent, type ItemDetailsComponent, type ModelComponent, type MovementComponent, type OffsensiveStatsComponent, type PlayerEquipmentComponent, type PrayerComponent, type StaminaComponent, type TransformComponent, type HomingProjectileComponent, type PathingComponent, type PlayerComponent } from "./ecs_components";
-import { ComponentTypes, EquipmentSlots, InventoryUseType, type Entity } from "./ecs_types";
+import { type DefensiveStatsComponent, type DamageReceiverComponent, type HealthComponent, type HitSplatComponent, type InventoryComponent, type ItemDetailsComponent, type ModelComponent, type MovementComponent, type OffsensiveStatsComponent, type PlayerEquipmentComponent, type PrayerComponent, type StaminaComponent, type TransformComponent, type HomingProjectileComponent, type PathingComponent, type PlayerComponent } from "./ecs_components";
+import { ComponentTypes, type Entity } from "./ecs_types";
 import { PLAYER_WALK_SPEED } from "./globals";
 import { getNpcPathToPlayer, pathingBFS } from "./pathing";
 import { WorldPosition } from "./position";
@@ -231,45 +231,6 @@ export function getAllEdgeTiles(transformComponent: TransformComponent): WorldPo
     return allEdgeTiles
 }
 
-export function createTestItem(coordinator: Coordinator): Entity {
-    const itemEntity = coordinator.createEntity()
-    coordinator.addComponent<ItemDetailsComponent>(itemEntity, ComponentTypes.ItemDetails, {
-        name: "Test Item",
-        description: "Test Description",
-        icon: "src/assets/test_item.png",
-        itemType: InventoryUseType.Equip,
-    })
-
-    coordinator.addComponent<ArmourComponent>(itemEntity, ComponentTypes.Armour, {
-        attackLevelRequirement: 0,
-        strengthLevelRequirement: 0,
-        rangedLevelRequirement: 0,
-        magicLevelRequirement: 0,
-        defenceLevelRequirement: 0,
-
-        stabAttackBonus: 1,
-        slashAttackBonus: 1,
-        crushAttackBonus: 1,
-        rangedAttackBonus: 1,
-        magicAttackBonus: 1,
-
-        stabDefenceBonus: 1,
-        slashDefenceBonus: 1,
-        crushDefenceBonus: 1,
-        rangedDefenceBonus: 1,
-        magicDefenceBonus: 1,
-
-        meleeStrengthBonus: 1,
-        rangedStrengthBonus: 1,
-        magicDamageBonus: 1,
-        prayerBonus: 1,
-
-        equipSlots: [EquipmentSlots.Head]
-
-    })
-    return itemEntity
-}
-
 export function getRandomInt(min: number, max: number) {
     return Math.floor(Math.random() * max) + min
 }
@@ -352,21 +313,21 @@ export function createPlayer(coordinator: Coordinator) {
         attackLevel: 99,
         strengthLevel: 99,
         magicLevel: 99,
-        rangedLevel: 200,
+        rangedLevel: 99,
 
         stabAttackBonus: 0,
         slashAttackBonus: 0,
         crushAttackBonus: 0,
-        rangedAttackBonus: 250,
+        rangedAttackBonus: 0,
         magicAttackBonus: 0,
 
         meleeStrengthBonus: 0,
-        rangedStrengthBonus: 20,
+        rangedStrengthBonus: 0,
         magicDamageBonus: 0,
         prayerBonus: 0,
 
-        attackRange: 10,
-        attackCooldown: 5,
+        attackRange: 1,
+        attackCooldown: 4,
         ticksUntilCanAttack: 0,
         createAttack: createStandardRangeAttack,
     })
@@ -374,11 +335,11 @@ export function createPlayer(coordinator: Coordinator) {
         magicLevel: 99,
         defenceLevel: 99,
 
-        stabDefenceBonus: 59,
-        slashDefenceBonus: 52,
-        crushDefenceBonus: 64,
-        rangedDefenceBonus: 60,
-        magicDefenceBonus: 74,
+        stabDefenceBonus: 0,
+        slashDefenceBonus: 0,
+        crushDefenceBonus: 0,
+        rangedDefenceBonus: 0,
+        magicDefenceBonus: 0,
     })
 
     return player

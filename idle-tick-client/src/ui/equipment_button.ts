@@ -1,6 +1,7 @@
 import type { Resolution } from "../camera";
 import type { Entity, EquipmentSlotKeys } from "../ecs_types";
 import { INVENTORY_BUTTON_FLASH_DURATION_MS } from "../globals";
+import { getItemModel } from "../item_models";
 import type { ScreenPosition } from "../position";
 import type { UiEngineCommunicator } from "../ui_engine_communicator";
 import type { InteractiveElementDebugInfo } from "./interactive_element";
@@ -49,14 +50,15 @@ export class EquipmentButton extends TwoStateSquareButton {
             this.equipmentEntity = newEquipmentEntity
             if (newEquipmentEntity === null) {
                 const emptyEquipSlot = new Image()
-                emptyEquipSlot.src = "src/assets/empty_equip_slot.png"
+                emptyEquipSlot.src = "src/assets/grey_background_with_black_border.png"
                 this.unClickedIcon = emptyEquipSlot
                 return
             }
 
             const newItemDetails = this.uiEngineCommunicator.getItemDetails(newEquipmentEntity)
             const newIcon = new Image()
-            newIcon.src = newItemDetails.icon
+            newIcon.src = getItemModel(newItemDetails.itemKey)
+            console.log(getItemModel(newItemDetails.itemKey))
             this.unClickedIcon = newIcon
         })
 

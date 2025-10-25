@@ -1,8 +1,6 @@
 import type { DefensiveStatsComponent, OffsensiveStatsComponent } from "./ecs_components"
 import { EquipmentSlots, type EquipmentSlotKeys } from "./ecs_types"
-import { PLAYER_UNARMED_ATTACK_RANGE, PLAYER_UNARMED_ATTACK_SPEED } from "./globals"
-
-type ItemID = number
+import { ITEMS, PLAYER_UNARMED_ATTACK_RANGE, PLAYER_UNARMED_ATTACK_SPEED, type ItemKeys } from "./globals"
 
 // @TODO:
 //  - Models
@@ -85,17 +83,17 @@ interface PartialWeaponStats extends PartialArmourStats {
 }
 
 interface EquipmentInformation {
-    itemID: ItemID
+    itemID: ItemKeys
     isMainHand: boolean
     requirements: Requirements
     equipmentStats: WeaponStats | ArmourStats
 }
 
 
-const EQUIPMENT_MAP = new Map<ItemID, EquipmentInformation>()
+const EQUIPMENT_MAP = new Map<ItemKeys, EquipmentInformation>()
 
 const twistedBow: EquipmentInformation = {
-    itemID: 1,
+    itemID: ITEMS.TwistedBow,
     isMainHand: true,
     requirements: equipmentRequirementsFactory({
         rangedLevel: 85,
@@ -125,7 +123,7 @@ const twistedBow: EquipmentInformation = {
 }
 
 const fortifiedMasoriBody: EquipmentInformation = {
-    itemID: 2,
+    itemID: ITEMS.FortifiedMasoriBody,
     isMainHand: false,
     requirements: equipmentRequirementsFactory({
         rangedLevel: 80,
@@ -149,7 +147,7 @@ const fortifiedMasoriBody: EquipmentInformation = {
 }
 
 const fortifiedMasoriChaps: EquipmentInformation = {
-    itemID: 3,
+    itemID: ITEMS.FortifiedMasoriChaps,
     isMainHand: false,
     requirements: equipmentRequirementsFactory({
         rangedLevel: 80,
@@ -171,7 +169,7 @@ const fortifiedMasoriChaps: EquipmentInformation = {
     })
 }
 
-export function meetsRequirements(itemID: ItemID, offensiveStatsComponent: OffsensiveStatsComponent, defensiveStatsComponent: DefensiveStatsComponent) {
+export function meetsRequirements(itemID: ItemKeys, offensiveStatsComponent: OffsensiveStatsComponent, defensiveStatsComponent: DefensiveStatsComponent) {
     const equipmentInformation = EQUIPMENT_MAP.get(itemID)
     if (equipmentInformation === undefined) {
         throw new Error(`equipment information for itemID: ${itemID} could not be found when checking requirements`)
@@ -263,7 +261,7 @@ function armourStatsFactory(partialArmourStats: PartialArmourStats): ArmourStats
     return armourStats
 }
 
-export function addEquipmentStatsToOffensiveStats(itemID: ItemID, offensiveStatsComponent: OffsensiveStatsComponent) {
+export function addEquipmentStatsToOffensiveStats(itemID: ItemKeys, offensiveStatsComponent: OffsensiveStatsComponent) {
     const equipmentInformation = EQUIPMENT_MAP.get(itemID)
     if (equipmentInformation === undefined) {
         throw new Error(`equipment information for itemID: ${itemID} could not be found when adding equipment stats to offensive stats`)
@@ -288,7 +286,7 @@ export function addEquipmentStatsToOffensiveStats(itemID: ItemID, offensiveStats
 
 }
 
-export function subtractEquipmentStatsFromOffensiveStats(itemID: ItemID, offensiveStatsComponent: OffsensiveStatsComponent) {
+export function subtractEquipmentStatsFromOffensiveStats(itemID: ItemKeys, offensiveStatsComponent: OffsensiveStatsComponent) {
     const equipmentInformation = EQUIPMENT_MAP.get(itemID)
     if (equipmentInformation === undefined) {
         throw new Error(`equipment information for itemID: ${itemID} could not be found when subtracting equipment stats from offensive stats`)
@@ -313,7 +311,7 @@ export function subtractEquipmentStatsFromOffensiveStats(itemID: ItemID, offensi
 
 }
 
-export function addEquipmentStatsToDefensiveStats(itemID: ItemID, defensiveStatsComponent: DefensiveStatsComponent) {
+export function addEquipmentStatsToDefensiveStats(itemID: ItemKeys, defensiveStatsComponent: DefensiveStatsComponent) {
     const equipmentInformation = EQUIPMENT_MAP.get(itemID)
     if (equipmentInformation === undefined) {
         throw new Error(`equipment information for itemID: ${itemID} could not be found when adding equipment stats to defensive stats`)
@@ -329,7 +327,7 @@ export function addEquipmentStatsToDefensiveStats(itemID: ItemID, defensiveStats
 
 }
 
-export function subtractEquipmentStatsFromDefensiveStats(itemID: ItemID, defensiveStatsComponent: DefensiveStatsComponent) {
+export function subtractEquipmentStatsFromDefensiveStats(itemID: ItemKeys, defensiveStatsComponent: DefensiveStatsComponent) {
     const equipmentInformation = EQUIPMENT_MAP.get(itemID)
     if (equipmentInformation === undefined) {
         throw new Error(`equipment information for itemID: ${itemID} could not be found when subtracting equipment stats from defensive stats`)
@@ -356,4 +354,12 @@ for (const item of items) {
         throw new Error(`itemID: ${item.itemID} already exists`)
     }
     EQUIPMENT_MAP.set(item.itemID, item)
+}
+
+export function getEquipmentInformation(itemKey: ItemKeys): EquipmentInformation {
+    const equipmentInformation = EQUIPMENT_MAP.get(itemKey)
+    if (equipmentInformation === undefined) {
+        throw new Error(`Could not find equipment information for :${itemKey}`)
+    }
+    return equipmentInformation
 }

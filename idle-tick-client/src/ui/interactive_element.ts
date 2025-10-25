@@ -212,6 +212,10 @@ export abstract class InteractiveElement<T> implements IInteractiveUiElement {
 
     handleMouseInput(processedInput: ProcessedInput) {
         // @TODO: do we need to check all ui elements?
+        if (!this.isActive) {
+            return
+        }
+        
         if (processedInput.mouseMoved) {
             this.handleMouseMove(processedInput)
         }

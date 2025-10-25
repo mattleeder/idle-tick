@@ -1,12 +1,13 @@
 import type { CombatUIData } from "./access_player_data";
 import type { CombatEngine } from "./combat_engine";
-import type { AttackData, CombatInputQueue, MoveData, PrayerChangeData } from "./combat_input_queue";
+import type { AttackData, CombatInputQueue, ConsumeData, MoveData, PrayerChangeData } from "./combat_input_queue";
 import type { Coordinator } from "./ecs";
-import { type InventoryComponent, type PlayerEquipmentComponent, type ItemDetailsComponent, type HealthComponent, type StaminaComponent, type PrayerComponent, type MovementComponent } from "./ecs_components";
+import { type InventoryComponent, type PlayerEquipmentComponent, type ItemDetailsComponent, type HealthComponent, type StaminaComponent, type PrayerComponent, type MovementComponent, OffsensiveStatsComponent, DefensiveStatsComponent } from "./ecs_components";
 import { StaminaSystem } from "./ecs_systems";
 import { ComponentTypes, type Entity, type EquipmentSlotKeys, type PrayerKeys } from "./ecs_types";
 import { INVENTORY_SIZE } from "./globals";
 import type { uiCallbackFn } from "./ui/interactive_element";
+import type { UiGroup } from "./ui/ui_group";
 import { arraysAreEqual } from "./utilities";
 
 export class UiEngineCommunicator {
@@ -146,6 +147,10 @@ export class UiEngineCommunicator {
         return playerPrayerComponent.activePrayers
     }
 
+    getCoordinator(): Coordinator {
+        return this.coordinator
+    }
+
     getItemDetails(itemEntity: Entity): ItemDetailsComponent {
         const itemDetailsComponent = this.coordinator.getComponent<ItemDetailsComponent>(itemEntity, ComponentTypes.ItemDetails)
         return itemDetailsComponent
@@ -231,14 +236,6 @@ export class UiEngineCommunicator {
         this.inputQueue.clearUnequip()
     }
 
-    queueUsePotion() {
-        this.inputQueue.queueUsePotion()
-    }
-
-    queueEatFood() {
-        this.inputQueue.queueEatFood()
-    }
-
     getCameraRotationAngle() {
         return this.coordinator.camera.rotationAngle
     }
@@ -267,5 +264,62 @@ export class UiEngineCommunicator {
         const staminaComponent = this.coordinator.getComponent<StaminaComponent>(this.playerEntity, ComponentTypes.Stamina)
         const movementComponent = this.coordinator.getComponent<MovementComponent>(this.playerEntity, ComponentTypes.Movement)
         StaminaSystem.turnOnRun(staminaComponent, movementComponent)
+    }
+
+    queueConsumeItem(itemEntity: Entity, inventoryPosition: number, consumeFunction: (coordinator: Coordinator, consumingEntity: Entity) => void) {
+        const consumeData: ConsumeData = {
+            itemEntity: itemEntity,
+            invetoryPosition: inventoryPosition,
+            consumeFunction: consumeFunction,
+        }
+        this.inputQueue.queueConsumeItem(consumeData)
+    }
+
+    openWindow(windowGroup: UiGroup) {
+        for (const element of this.engine.newUiElements) {
+            if (element === windowGroup) {
+                windowGroup.isActive = true
+            }
+        }
+    }
+
+    closeWindow(windowGroup: UiGroup) {
+        for (const element of this.engine.newUiElements) {
+            if (element === windowGroup) {
+                windowGroup.isActive = false
+            }
+        }
+    }
+
+    getEquipmentWindowInformation() {
+        const offensiveStatsComponent = this.coordinator.getComponent<OffsensiveStatsComponent>(this.playerEntity, ComponentTypes.OffensiveStats)
+        const defensiveStatsComponent = this.coordinator.getComponent<DefensiveStatsComponent>(this.playerEntity, ComponentTypes.DefensiveStats)
+
+        return {
+            "Attack": {
+                "Stab": offensiveStatsComponent.stabAttackBonus,
+                "Slash": offensiveStatsComponent.slashAttackBonus,
+                "Crush": offensiveStatsComponent.crushAttackBonus,
+                "Magic": offensiveStatsComponent.magicAttackBonus,
+                "Range": offensiveStatsComponent.rangedAttackBonus,
+            },
+
+            "Defence": {
+                "Stab": defensiveStatsComponent.stabDefenceBonus,
+                "Slash": defensiveStatsComponent.slashDefenceBonus,
+                "Crush": defensiveStatsComponent.crushDefenceBonus,
+                "Magic": defensiveStatsComponent.magicDefenceBonus,
+                "Range": defensiveStatsComponent.rangedDefenceBonus,
+            },
+
+            "Other": {
+                "Melee Strength": offensiveStatsComponent.meleeStrengthBonus,
+                "Ranged Strength": offensiveStatsComponent.rangedStrengthBonus,
+                "Magic DMG": offensiveStatsComponent.magicDamageBonus,
+                "Prayer": offensiveStatsComponent.prayerBonus,
+                "Weapon Speed": offensiveStatsComponent.attackCooldown,
+                "Weapon Range": offensiveStatsComponent.attackRange,
+            }
+        }
     }
 }

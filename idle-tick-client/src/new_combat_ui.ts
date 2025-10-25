@@ -12,7 +12,10 @@ import { PrayerButton, type PrayerButtonData } from "./ui/prayer_button";
 import { RibbonButton } from "./ui/ribbon_button";
 import { SquareUiElement } from "./ui/square_ui_element";
 import { ClickStates } from "./ui/two_state_circular_button";
+import { TwoStateHoveredSquareButton } from "./ui/two_state_hovered_square_button";
+import { TwoStateSquareButton } from "./ui/two_state_square_button";
 import { UiGroup } from "./ui/ui_group";
+import { UiText } from "./ui/ui_text";
 import { UiEngineCommunicator } from "./ui_engine_communicator";
 
 
@@ -66,6 +69,24 @@ spellsIconImage.src = "src/assets/spellicon.png"
 
 const ribbonBackgroundImage = new Image()
 ribbonBackgroundImage.src = "src/assets/ribbonbackground.png"
+
+const equipmentInformationImage = new Image()
+equipmentInformationImage.src = "src/assets/equipment_information_button.png"
+
+const crossImage = new Image()
+crossImage.src = "src/assets/cross.png"
+
+const greyBackgroundWithBlackBorder = new Image()
+greyBackgroundWithBlackBorder.src = "src/assets/grey_background_with_black_border.png"
+
+const orangeBackgroundWithBlackBorder = new Image()
+orangeBackgroundWithBlackBorder.src = "src/assets/orange_background_with_black_border.png"
+
+const blackSquare = new Image()
+blackSquare.src = "src/assets/black_square.png"
+
+const greySquare = new Image()
+greySquare.src = "src/assets/grey_square.png"
 
 function createRibbonGroupWithButton(
     isGroupActive: boolean,
@@ -158,6 +179,9 @@ export function createNewUIElements(uiEngineCommunicator: UiEngineCommunicator, 
     // const ribbonGroupScreenPosition = new ScreenPosition(0, 0)
     const ribbonGroupDimensions = {width: camera.resolution.width * 0.25, height: camera.resolution.height * 0.35}
     const ribbonMenuDimensions = {width: ribbonGroupDimensions.width, height: ribbonGroupDimensions.height - 2 * ribbonButtonDimensions.height}
+    const ribbonMenuBorderDimensions = {width: ribbonGroupDimensions.width + 4, height: ribbonGroupDimensions.height - ribbonButtonDimensions.height + 4}
+
+    const equipmentButtonDimensions = {width: camera.resolution.width * 0.035, height: camera.resolution.height * 0.035}
     const ribbonGroup = new UiGroup(
         true,
         true,
@@ -176,6 +200,16 @@ export function createNewUIElements(uiEngineCommunicator: UiEngineCommunicator, 
     )
 
     ribbonMenuBackground.setActiveBackground(ribbonBackgroundImage)
+
+    const ribbonMenuBorder = new SquareUiElement(
+        true,
+        false,
+        new ScreenPosition(-2, -2),
+        ribbonMenuBorderDimensions,
+        {name: "ribbonMenuBackground"},
+    )
+
+    ribbonMenuBorder.setActiveBackground(blackSquare)
 
     const [combatMenuGroup, combatMenuButton] = createRibbonGroupWithButton(
         false,
@@ -218,7 +252,9 @@ export function createNewUIElements(uiEngineCommunicator: UiEngineCommunicator, 
         {name: "equipmentMenuButton"}
     )
 
-    const equipmentButtons = createEquipmentButtons(ribbonButtonDimensions, uiEngineCommunicator)
+    const equipmentInformationWindow = createEquipmentInformationWindow(uiEngineCommunicator)
+
+    const equipmentButtons = createEquipmentButtons(equipmentButtonDimensions, uiEngineCommunicator, equipmentInformationWindow)
     for (const button of equipmentButtons) {
         equipmentMenuGroup.addChild(button)
     }
@@ -263,6 +299,7 @@ export function createNewUIElements(uiEngineCommunicator: UiEngineCommunicator, 
         })
     }
 
+    ribbonGroup.addChild(ribbonMenuBorder)
     ribbonGroup.addChild(ribbonMenuBackground)
     ribbonGroup.addChild(ribbonMenuController)
     ribbonGroup.addChild(combatMenuButton)
@@ -277,6 +314,7 @@ export function createNewUIElements(uiEngineCommunicator: UiEngineCommunicator, 
     ribbonGroup.addChild(spellsMenuGroup)
 
     return [
+        equipmentInformationWindow,
         compass,
         prayer,
         health,
@@ -306,7 +344,7 @@ function createInventoryButton(slotNumber: number, inventoryDimensions: Resoluti
         true,
         slotPosition,
         {width: colWidth, height: rowHeight},
-        emptyEquipSlot,
+        transparentBackground,
         buttonData,
         uiEngineCommunicator,
         {name: `inventorySlotPosition${slotPosition}`},
@@ -315,19 +353,19 @@ function createInventoryButton(slotNumber: number, inventoryDimensions: Resoluti
     return button
 }
 
-function createEquipmentButtons(buttonDimensions: Resolution, uiEngineCommunicator: UiEngineCommunicator) {
+function createEquipmentButtons(buttonDimensions: Resolution, uiEngineCommunicator: UiEngineCommunicator, equipmentWindow: UiGroup) {
     const equipmentButtonPositions: Record<EquipmentSlotKeys, ScreenPosition> = {
-        head:       new ScreenPosition(100, 0),
-        cape:       new ScreenPosition(40, 55),
-        neck:       new ScreenPosition(100, 55),
-        ammo:       new ScreenPosition(160, 55),
-        mainHand:   new ScreenPosition(30, 110),
-        chest:      new ScreenPosition(100, 110),
-        offHand:    new ScreenPosition(170, 110),
-        legs:       new ScreenPosition(100, 165),
-        gloves:     new ScreenPosition(30, 220),
-        boots:      new ScreenPosition(100, 220),
-        ring:       new ScreenPosition(170, 220),
+        head:       new ScreenPosition(110, 10),
+        cape:       new ScreenPosition(50, 48),
+        neck:       new ScreenPosition(110, 48),
+        ammo:       new ScreenPosition(170, 48),
+        mainHand:   new ScreenPosition(40, 86),
+        chest:      new ScreenPosition(110, 86),
+        offHand:    new ScreenPosition(180, 86),
+        legs:       new ScreenPosition(110, 124),
+        gloves:     new ScreenPosition(40, 162),
+        boots:      new ScreenPosition(110, 162),
+        ring:       new ScreenPosition(180, 162),
     }
 
     const emptyEquipSlot = new Image()
@@ -344,7 +382,7 @@ function createEquipmentButtons(buttonDimensions: Resolution, uiEngineCommunicat
             true,
             position,
             buttonDimensions,
-            emptyEquipSlot,
+            greyBackgroundWithBlackBorder,
             equipmentButtonData,
             uiEngineCommunicator,
             {name: `equipmentSlotPosition${slot}`},
@@ -352,6 +390,24 @@ function createEquipmentButtons(buttonDimensions: Resolution, uiEngineCommunicat
 
         equipmentButtons.push(button)
     }
+
+    const showStatsButton = new TwoStateSquareButton(
+        true,
+        new ScreenPosition(30, 210),
+        buttonDimensions,
+        equipmentInformationImage,
+        equipmentInformationImage,
+        greyBackgroundWithBlackBorder,
+        greyBackgroundWithBlackBorder,
+        {name: "equipmentInformationButton"},
+    )
+
+    equipmentButtons.push(showStatsButton)
+
+    showStatsButton.onMouseClick(() => {
+        uiEngineCommunicator.openWindow(equipmentWindow)
+        console.log("Opening equipment window")
+    })
 
     return equipmentButtons
 
@@ -385,4 +441,104 @@ function createPrayerButtons(uiEngineCommunicator: UiEngineCommunicator, buttonD
     }
 
     return prayerButtons
+}
+
+function createEquipmentInformationWindow(uiEngineCommunicator: UiEngineCommunicator) {
+    const equipmentWindowDimensions = {width: 500, height: 500}
+    const equipmentWindowBorderDimensions = {width: 504, height: 504}
+    const windowGroup = new UiGroup(
+        false, 
+        true, 
+        new ScreenPosition(0, 0), 
+        {name: "equipmentWindow"}
+    )
+
+    const equipmentWindowBackground = new SquareUiElement(
+        true,
+        false,
+        new ScreenPosition(0, 0),
+        equipmentWindowDimensions,
+        {name: "equipmentWindowBackground"},
+    )
+
+    const equipmentWindowBorder = new SquareUiElement(
+        true,
+        false,
+        new ScreenPosition(-2, -2),
+        equipmentWindowBorderDimensions,
+        {name: "equipmentWindowBackground"},
+    )
+
+    equipmentWindowBackground.setActiveBackground(greySquare)
+
+    equipmentWindowBorder.setActiveBackground(blackSquare)
+
+    const equipmentInformation = uiEngineCommunicator.getEquipmentWindowInformation()
+    const sections = ["Attack", "Defence", "Other"]
+    let textPosition = new ScreenPosition(250, 60)
+    const textElements = []
+    for (const section of sections) {
+        const sectionHeader = new UiText(
+            `${section} bonuses:`,
+            true,
+            false,
+            textPosition,
+            {width: 0, height: 0},
+            {name: `${section} header text`}
+        )
+        textPosition = textPosition.add(new ScreenPosition(0, 10))
+        textElements.push(sectionHeader)
+
+        for (const [key, value] of Object.entries(equipmentInformation[section])) {
+            const text = new UiText(
+                `${key}: ${value}`,
+                true,
+                false,
+                textPosition,
+                {width: 0, height: 0},
+                {name: `${section}: ${key} text`}
+            )
+
+            textPosition = textPosition.add(new ScreenPosition(0, 10))
+            textElements.push(text)
+        }
+        textPosition = textPosition.add(new ScreenPosition(0, 10))
+    }
+
+    windowGroup.onActive(() => {
+        const newEquipmentInformation = uiEngineCommunicator.getEquipmentWindowInformation()
+        console.log(newEquipmentInformation)
+        let i = 0
+        for (const section of sections) {
+            i += 1
+            for (const [key, value] of Object.entries(newEquipmentInformation[section])) {
+                textElements[i].textContent = `${key}: ${value}`
+                i += 1
+            }
+        }
+    })
+
+    const closeButton = new TwoStateHoveredSquareButton (
+        true,
+        new ScreenPosition(440, 10),
+        {width: 50, height: 50},
+        crossImage,
+        crossImage,
+        greyBackgroundWithBlackBorder,
+        orangeBackgroundWithBlackBorder,
+        {name: "closeEquipmentWindowButton"}
+    )
+
+    closeButton.onMouseClick(() => {
+        uiEngineCommunicator.closeWindow(windowGroup)
+    })
+
+    windowGroup.addChild(equipmentWindowBorder)
+    windowGroup.addChild(equipmentWindowBackground)
+    windowGroup.addChild(closeButton)
+    for (const element of textElements) {
+        windowGroup.addChild(element)
+    }
+
+    return windowGroup
 }
