@@ -276,7 +276,7 @@ export class UiEngineCommunicator {
     }
 
     openWindow(windowGroup: UiGroup) {
-        for (const element of this.engine.newUiElements) {
+        for (const element of this.engine.uiManager.children) {
             if (element === windowGroup) {
                 windowGroup.isActive = true
             }
@@ -284,7 +284,7 @@ export class UiEngineCommunicator {
     }
 
     closeWindow(windowGroup: UiGroup) {
-        for (const element of this.engine.newUiElements) {
+        for (const element of this.engine.uiManager.children) {
             if (element === windowGroup) {
                 windowGroup.isActive = false
             }

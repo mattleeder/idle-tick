@@ -1,5 +1,5 @@
 import type { ScreenPosition } from "../position"
-import { InteractiveElement, type IInteractiveUiElement, type InteractiveElementDebugInfo, type InteractiveUiElementStateImages } from "./interactive_element"
+import { InteractiveElement, type IInteractiveUiElement, type InteractiveElementDebugInfo } from "./interactive_element"
 
 export class CircularUIElement extends InteractiveElement<number> {
 

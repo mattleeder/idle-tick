@@ -107,6 +107,11 @@ export class ScreenPosition implements Position2D {
         return new ScreenPosition(result.x, result.y)
     }
 
+    mul(scalar: number): ScreenPosition {
+        const result = Position.mul(this, scalar)
+        return new ScreenPosition(result.x, result.y)
+    }
+
     equals(other: ScreenPosition): boolean {
         return Position.equals(this, other)
     }

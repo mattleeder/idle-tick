@@ -72,6 +72,10 @@ export class Camera {
         this.baseTileSize = tileSize
     }
 
+    setResolution(newResolution: Resolution) {
+        this.resolution = newResolution
+    }
+
     getWorldPosition(): WorldPosition {
         return this._worldPosition
     }

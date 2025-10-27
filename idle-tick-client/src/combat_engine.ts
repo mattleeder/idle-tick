@@ -5,19 +5,22 @@ import { type TransformComponent, type StaminaComponent, type MovementComponent,
 import { ModelRenderSystem, HitSplatRenderSystem, HealthBarRenderSystem, PrayerRenderSystem } from "./ecs_render_systems";
 import { StaminaSystem, MovementSystem, AnimationSystem, DamageReceiverSystem, SimpleBehaviourSystem, HomingProjectileSystem, InventorySystem, PlayerEquipmentSystem, PrayerSystem, AttackCooldownSystem, AttackCommandSystem } from "./ecs_systems";
 import { type Entity, ComponentTypes } from "./ecs_types";
-import { TILE_SIZE_PIXELS, TICK_RATE_MS, MOUSE_SENSITIVITY, ITEMS } from "./globals";
+import { TILE_SIZE_PIXELS, TICK_RATE_MS, MOUSE_SENSITIVITY, ITEMS, BASE_WIDTH, BASE_HEIGHT } from "./globals";
 import { WaveTestInstance, type Instance } from "./instance";
 import { createItem } from "./item_options";
 import { createNewUIElements } from "./new_combat_ui";
 import { pathingBFS } from "./pathing";
 import { ScreenPosition, WorldPosition } from "./position";
 import { TileMap, } from "./tile_maps";
-import type { IInteractiveUiElement } from "./ui/interactive_element";
 import { UiEngineCommunicator } from "./ui_engine_communicator";
+import { UiManager } from "./ui_manager";
 import { createPlayer, npcWasClicked } from "./utilities";
 
 export class CombatEngine {
     private canvas: HTMLCanvasElement;
+    private canvasParent: HTMLDivElement;
+    private parentWidth: number;
+    private parentHeight: number;
     private ctx: CanvasRenderingContext2D;
     private camera: Camera;
     private inputQueue: CombatInputQueue;
@@ -25,12 +28,16 @@ export class CombatEngine {
     private lastTime = 0;
     private timeSinceLastTick = 0;
     private frameCount = 0;
-    newUiElements: IInteractiveUiElement[];
+    uiManager: UiManager;
     private player: Entity;
     private playerCurentRawInput: RawInput;
     private playerPreviousRawInput: RawInput;
     npcs: Entity[]
     tileBlockCount: number[]
+
+    private currentWidth: number
+    private currentHeight: number
+    private currentScale: number
     
     currentTileMap!: TileMap;
     coordinator: Coordinator;
@@ -58,14 +65,38 @@ export class CombatEngine {
 
     private combatInstance: Instance
     
-    constructor(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) {
+    constructor(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, canvasParent: HTMLDivElement) {
         this.canvas = canvas
         this.ctx = ctx
+        this.canvasParent = canvasParent
+        const parentRect = canvasParent.getBoundingClientRect()
+        this.parentWidth = parentRect.width
+        this.parentHeight = parentRect.height
 
+        this.currentWidth = BASE_WIDTH
+        this.currentHeight = BASE_HEIGHT
+        this.currentScale = window.devicePixelRatio
+
+        this.uiManager = new UiManager(BASE_WIDTH, BASE_HEIGHT)
+        
         const canvasBoundingClientRect = canvas.getBoundingClientRect()        
         this.camera = new Camera({width: canvasBoundingClientRect.width, height: canvasBoundingClientRect.height}, TILE_SIZE_PIXELS)
+        // this.camera = new Camera({width: 2048, height: 2048}, TILE_SIZE_PIXELS)
+
+        const mediaQueryString = `(resolution: ${window.devicePixelRatio}dppx)`
+        const media = matchMedia(mediaQueryString)
+
+        this.resize()
+        media.addEventListener("change", () => {
+            this.resize()
+        })
+        window.addEventListener("resize", () => {
+            this.resize()
+        })
+
 
         this.running = false
+
         
         // this.currentTileMap = testCaveTileMap
         
@@ -156,8 +187,44 @@ export class CombatEngine {
         playerInventory.slots[5] = healthPotionFirstTwoDose
         playerInventory.slots[6] = healthPotionSecondTwoDose
        
-        this.newUiElements = createNewUIElements(this.uiEngineCommunicator, this.camera)
+        for (const element of createNewUIElements(this.uiEngineCommunicator, this.camera)) {
+            this.uiManager.addUiElement(element)
+        }
         
+    }
+
+    resize() {
+        console.log("RESIZING")
+        const devicePixelRatio = window.devicePixelRatio
+        // this.canvas.style.width = `${BASE_WIDTH}px`
+        // this.canvas.style.height = `${BASE_HEIGHT}px`
+        this.canvas.style.width = "100%"
+        this.canvas.style.height = "100%"
+        const canvasBoundingClientRect = this.canvas.getBoundingClientRect()
+        this.canvas.width = Math.round(devicePixelRatio * canvasBoundingClientRect.right) - Math.round(devicePixelRatio * canvasBoundingClientRect.left)
+        this.canvas.height = Math.round(devicePixelRatio * canvasBoundingClientRect.bottom) - Math.round(devicePixelRatio * canvasBoundingClientRect.top)
+        this.camera.baseTileSize = TILE_SIZE_PIXELS * devicePixelRatio
+        this.camera.tileSize = this.camera.zoomLevel * TILE_SIZE_PIXELS * devicePixelRatio
+
+        console.log(`canvasWidth: ${this.canvas.width}`)
+        console.log(`canvasHeight: ${this.canvas.height}`)
+
+        console.log(this.camera.baseTileSize)
+
+        // this.uiManager.resize(this.canvas.width, this.canvas.height)
+        this.uiManager.resize(this.parentWidth, this.parentHeight)
+        
+        this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+        this.ctx.scale(devicePixelRatio, devicePixelRatio)
+
+        // this.camera.setResolution({
+        //         width: canvasBoundingClientRect.width * this.currentScale, 
+        //         height: canvasBoundingClientRect.height * this.currentScale,
+        //     })
+
+        // const scaleX = this.currentWidth / this.baseWidth
+        // const scaleY = this.currentHeight / this.baseHeight
+        // const scale = Math.min(scaleX, scaleY)
     }
 
     start() {
@@ -227,6 +294,17 @@ export class CombatEngine {
     }
 
     private gameLoop = (timestamp: number) => {
+        // @TODO: is there a more efficient way to check for resize?
+        // Maybe use a ref?
+        const parentRect = this.canvasParent.getBoundingClientRect()
+        const parentWidth = parentRect.width
+        const parentHeight = parentRect.height
+        if (this.parentWidth != parentWidth || this.parentHeight != parentHeight) {
+            this.parentHeight = parentRect.height
+            this.parentWidth = parentRect.width
+            this.resize()
+        }
+
         const deltaTimeMs= timestamp - this.lastTime
         this.lastTime = timestamp
         this.timeSinceLastTick += deltaTimeMs
@@ -243,7 +321,7 @@ export class CombatEngine {
             requestAnimationFrame(this.gameLoop);
         }
     }
-
+    
     private tick() {
         for (const prayer of this.inputQueue.stackedPrayerChange) {
             this.prayerSystem.changePrayer(this.player, prayer.prayer)
@@ -316,10 +394,7 @@ export class CombatEngine {
     }
 
     private drawUI(): void {
-        for (const element of this.newUiElements) {
-            // console.log(element)
-            element.draw(this.ctx)
-        }
+        this.uiManager.draw(this.ctx)
     }
 
     private updateCamera() {
@@ -486,6 +561,8 @@ export class CombatEngine {
         const mouseXCanvasPosition = currentInput.mousePositionX - canvasBoundingClientRect.x
         const mouseYCanvasPosition = currentInput.mousePositionY - canvasBoundingClientRect.y
 
+        // console.log(`Mouse position: ${mouseXCanvasPosition},${mouseYCanvasPosition}`)
+
         let mouseMoved = false
         if (currentInput.mousePositionX != previousInput.mousePositionX || currentInput.mousePositionY != previousInput.mousePositionY) {
             mouseMoved = true
@@ -515,7 +592,7 @@ export class CombatEngine {
 
         let uiWasClicked = false
         // Check for UI clicks first
-        for (const element of this.newUiElements) {
+        for (const element of this.uiManager.children) {
             element.handleMouseInput(processedInput)
             if (element.shouldHaltInteraction) {
                 console.log("UI CLICK")

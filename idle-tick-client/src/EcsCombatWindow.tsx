@@ -1,19 +1,22 @@
 import { useEffect, useRef } from "react"
 import { CombatEngine } from "./combat_engine"
+import { BASE_HEIGHT, BASE_WIDTH, BASE_SCALE } from "./globals"
 
 export function CombatWindow() {
 
+    const canvasParentRef = useRef<HTMLDivElement>(null)
     const canvasRef = useRef<HTMLCanvasElement>(null)
     const combatEngineRef = useRef<CombatEngine>(null)
-    const canvasWidth = 1024
-    const canvasHeight = 1024
+    const canvasWidth = BASE_WIDTH * BASE_SCALE
+    const canvasHeight = BASE_HEIGHT * BASE_SCALE
 
     useEffect(() => {
-        if (canvasRef.current !== null) {
+        if (canvasRef.current !== null && canvasParentRef.current !== null) {
             const ctx = canvasRef.current.getContext("2d")
 
             if (ctx !== null) {
-                combatEngineRef.current = new CombatEngine(canvasRef.current, ctx)
+                ctx.scale(BASE_SCALE, BASE_SCALE)
+                combatEngineRef.current = new CombatEngine(canvasRef.current, ctx, canvasParentRef.current)
                 combatEngineRef.current.start()
             }
         }
@@ -28,40 +31,41 @@ export function CombatWindow() {
     return (
         <>
           <h1>Combat</h1>
-          <div style={{width: `${canvasWidth}px`, height: `${canvasHeight}px`}}>
-            <canvas
-              style={{"border": "solid black"}}
-              width={`${canvasWidth}px`}
-              height={`${canvasHeight}px`}
-              ref={canvasRef}
-              onContextMenu={(event) => {event.preventDefault()}}
-              onMouseDown={(event) => {
-                if (combatEngineRef.current !== null)  {
-                    combatEngineRef.current.onMouseDown(event)
-                }
-              }}
-              onMouseUp={(event) => {
-                if (combatEngineRef.current !== null)  {
-                    combatEngineRef.current.onMouseUp(event)
-                }
-              }}
-              onMouseMove={(event) => {
-                if (combatEngineRef.current !== null)  {
-                    combatEngineRef.current.onMouseMove(event)
-                }
-              }}
-            //   onMouseLeave={(event) => {
-            //     if (combatEngineRef.current !== null)  {
-            //         combatEngineRef.current.mouseLeaveHandler(event)
-            //     }
-            //   }}
-              onWheel={(event) => {
-                if (combatEngineRef.current !== null) {
-                  combatEngineRef.current.onScroll(event)
-                }
-              }}
-            />
-          </div>
+            <div ref={canvasParentRef} style={{"resize": "both", "overflow": "auto", "overscrollBehavior": "contain"}}>
+              <canvas
+                style={{"border": "solid black"}}
+                width={`${canvasWidth}px`}
+                height={`${canvasHeight}px`}
+                ref={canvasRef}
+                onContextMenu={(event) => {event.preventDefault()}}
+                onMouseDown={(event) => {
+                  if (combatEngineRef.current !== null)  {
+                      combatEngineRef.current.onMouseDown(event)
+                  }
+                }}
+                onMouseUp={(event) => {
+                  if (combatEngineRef.current !== null)  {
+                      combatEngineRef.current.onMouseUp(event)
+                  }
+                }}
+                onMouseMove={(event) => {
+                  if (combatEngineRef.current !== null)  {
+                      combatEngineRef.current.onMouseMove(event)
+                  }
+                }}
+              //   onMouseLeave={(event) => {
+              //     if (combatEngineRef.current !== null)  {
+              //         combatEngineRef.current.mouseLeaveHandler(event)
+              //     }
+              //   }}
+                onWheel={(event) => {
+                  event.preventDefault()
+                  if (combatEngineRef.current !== null) {
+                    combatEngineRef.current.onScroll(event)
+                  }
+                }}
+              />
+            </div>
         </>
     )
 }

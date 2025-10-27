@@ -6,6 +6,9 @@ export const CAMERA_MAX_ZOOM_LEVEL = 10
 export const MOUSE_SENSITIVITY = 1
 export const TICK_RATE_MS = 600 // 0.6s
 export const TILE_SIZE_PIXELS = 64
+export const BASE_SCALE = window.devicePixelRatio
+export const BASE_WIDTH = 1024
+export const BASE_HEIGHT = 1024
 
 
 // ECS

@@ -2,6 +2,9 @@ import type { ProcessedInput } from "../combat_engine";
 import type { ScreenPosition } from "../position";
 import { type IInteractiveUiElement, type uiCallbackFn } from "./interactive_element";
 
+// @TODO: revisit this class
+// causing issues with double firing events, once here and once on the active element
+
 export class ControlledUiElement implements IInteractiveUiElement {
     protected _activeElement: IInteractiveUiElement
     protected onActiveChangeListeners: uiCallbackFn[]
@@ -24,7 +27,7 @@ export class ControlledUiElement implements IInteractiveUiElement {
     }
 
     set elementPosition(newPosition: ScreenPosition) {
-        this.activeElement.elementPosition = newPosition
+        // this.activeElement.elementPosition = newPosition
     }
 
     get activeElement() {
@@ -47,11 +50,11 @@ export class ControlledUiElement implements IInteractiveUiElement {
     }
 
     handleMouseInput(processedInput: ProcessedInput): void {
-        this.activeElement.handleMouseInput(processedInput)
+        // this.activeElement.handleMouseInput(processedInput)
     }
 
     draw(ctx: CanvasRenderingContext2D): void {
-        this.activeElement.draw(ctx)
+        // this.activeElement.draw(ctx)
     }
 
     onActiveChange(callbackFn: uiCallbackFn) {

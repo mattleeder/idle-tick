@@ -127,6 +127,8 @@ export class HitSplatRenderSystem extends System {
             for (const hitsplat of hitSplatComponent.hitSplats) {
                 this.coordinator.ctx.save()
 
+                this.coordinator.ctx.beginPath()
+
                 this.coordinator.ctx.arc(entityRenderCentreScreenPosition.x, entityRenderCentreScreenPosition.y, this.coordinator.camera.tileSize / 4, 0, 2 * Math.PI)
                 this.coordinator.ctx.fillStyle = "#e01a1aff"
                 this.coordinator.ctx.fill()

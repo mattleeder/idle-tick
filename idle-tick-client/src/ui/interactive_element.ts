@@ -1,3 +1,4 @@
+import type { Resolution } from "../camera"
 import type { ProcessedInput } from "../combat_engine"
 import { ScreenPosition } from "../position"
 
@@ -11,10 +12,20 @@ export const InteractiveUiElementStates = {
 }
 
 export type InteractiveUiElementStateKeys = typeof InteractiveUiElementStates[keyof typeof InteractiveUiElementStates]
+export type ElementSizeType = Resolution | number
+
+export function isResolution(size: ElementSizeType): size is Resolution {
+  return typeof size === 'object' && 'width' in size && 'height' in size;
+}
+
+export function isNumberSize(size: ElementSizeType): size is number {
+  return typeof size === 'number';
+}
 
 export interface  IInteractiveUiElement {
     isActive: boolean
     elementPosition: ScreenPosition
+    elementSize: ElementSizeType
     shouldHaltInteraction: boolean
     handleMouseInput(processedInput: ProcessedInput): void
     draw(ctx: CanvasRenderingContext2D): void
@@ -23,6 +34,9 @@ export interface  IInteractiveUiElement {
 export const dummyInteractiveUiElement: IInteractiveUiElement = {
     isActive: false,
     elementPosition: new ScreenPosition(-1, -1),
+    elementSize: {width: 0, height: 0},
+    shouldHaltInteraction: false,
+    
     handleMouseInput: (processedInput) => {
         return
     },
@@ -37,7 +51,7 @@ export interface InteractiveElementDebugInfo {
 
 export type InteractiveUiElementStateImages = Record<InteractiveUiElementStateKeys, HTMLImageElement | undefined>
 
-export abstract class InteractiveElement<T> implements IInteractiveUiElement {
+export abstract class InteractiveElement<T extends ElementSizeType> implements IInteractiveUiElement {
 
     elementSize: T
 
