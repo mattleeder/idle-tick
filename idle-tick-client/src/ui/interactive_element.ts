@@ -71,9 +71,7 @@ export abstract class InteractiveElement<T extends ElementSizeType> implements I
     private onMouseLeaveListeners: uiCallbackFn[]
     private onMouseClickListeners: uiCallbackFn[]
 
-    protected children: IInteractiveUiElement[]
-
-    constructor(isActive: boolean, isClickable: boolean, elementPosition: ScreenPosition, elementSize: T, debugInfo: InteractiveElementDebugInfo, children: IInteractiveUiElement[] = []) {
+    constructor(isActive: boolean, isClickable: boolean, elementPosition: ScreenPosition, elementSize: T, debugInfo: InteractiveElementDebugInfo) {
         this._isActive = isActive
         this._isClickable = isClickable
         this._isHovered = false
@@ -83,8 +81,6 @@ export abstract class InteractiveElement<T extends ElementSizeType> implements I
 
         this._elementPosition = elementPosition
         this.elementSize = elementSize
-
-        this.children = children
 
         this.debugInfo = debugInfo
 
@@ -244,12 +240,6 @@ export abstract class InteractiveElement<T extends ElementSizeType> implements I
 
         if (processedInput.mouseOneIsDown) {
             this.handleMouseOneDown()
-        }
-
-        for (const child of this.children) {
-            child.handleMouseInput(processedInput)
-            this.shouldHaltInteraction = this.shouldHaltInteraction || child.shouldHaltInteraction
-            child.shouldHaltInteraction = false
         }
     }
 

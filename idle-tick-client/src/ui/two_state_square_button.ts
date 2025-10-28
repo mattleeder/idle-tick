@@ -1,6 +1,6 @@
 import type { Resolution } from "../camera"
 import type { ScreenPosition } from "../position"
-import type { InteractiveElementDebugInfo, IInteractiveUiElement } from "./interactive_element"
+import type { InteractiveElementDebugInfo } from "./interactive_element"
 import { SquareUiElement } from "./square_ui_element"
 
 export const ClickStates = {
@@ -29,8 +29,7 @@ export class TwoStateSquareButton extends SquareUiElement {
         debugInfo: InteractiveElementDebugInfo,
     ) {
         const isClickable = true
-        const children: IInteractiveUiElement[] = []
-        super(isActive, isClickable, elementPosition, elementSize, debugInfo, children)
+        super(isActive, isClickable, elementPosition, elementSize, debugInfo)
         
         this._unClickedIcon = unClickedIcon
         this._clickedIcon = clickedIcon

@@ -1,6 +1,6 @@
 import type { ScreenPosition } from "../position"
 import { CircularUIElement } from "./circular_ui_element"
-import type { InteractiveElementDebugInfo, IInteractiveUiElement } from "./interactive_element"
+import type { InteractiveElementDebugInfo } from "./interactive_element"
 
 export const ClickStates = {
     Clicked:    "clicked",
@@ -28,8 +28,7 @@ export class TwoStateCircularButton extends CircularUIElement {
         debugInfo: InteractiveElementDebugInfo,
     ) {
         const isClickable = true
-        const children: IInteractiveUiElement[] = []
-        super(isActive, isClickable, elementPosition, elementRadius, debugInfo, children)
+        super(isActive, isClickable, elementPosition, elementRadius, debugInfo)
         
         this._unClickedIcon = unClickedIcon
         this._clickedIcon = clickedIcon

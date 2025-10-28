@@ -96,6 +96,7 @@ function createRibbonGroupWithButton(
     buttonIcon: HTMLImageElement,
     buttonUnclikedBackground: HTMLImageElement,
     buttonClickedBackground: HTMLImageElement,
+    ribbonMenuDimensions: Resolution,
     groupDebugInfo: InteractiveElementDebugInfo,
     buttonDebugInfo: InteractiveElementDebugInfo,
 ): [UiGroup, RibbonButton] {
@@ -103,7 +104,7 @@ function createRibbonGroupWithButton(
     const group = new UiGroup(
         isGroupActive,
         true,
-        new ScreenPosition(0, buttonDimensions.height),
+        new ScreenPosition(-ribbonMenuDimensions.width, -ribbonMenuDimensions.height + buttonDimensions.height),
         groupDebugInfo,
     )
 
@@ -144,11 +145,24 @@ export function createNewUIElements(uiEngineCommunicator: UiEngineCommunicator, 
         return {numerator: data.playerCurrentStamina, denominator: data.playerMaxStamina}
     }
 
-    const compass = new CompassButton(true, new ScreenPosition(camera.resolution.width * 0.9, camera.resolution.height * 0.1), 32, compassImage, uiEngineCommunicator, {name: "compassButton"})
-    const prayer = new DrainingButton(true, new ScreenPosition(camera.resolution.width * 0.8, camera.resolution.height * 0.1), 32, prayerIconImage, prayerIconImage, prayerBackgroundImage, prayerBackgroundImage, {name: "prayerTopButton"}, () => getPrayerData())
-    const health = new DrainingButton(true, new ScreenPosition(camera.resolution.width * 0.7, camera.resolution.height * 0.1), 32, healthIconImage, healthIconImage, healthBackgroundImage, healthBackgroundImage, {name: "healthTopButton"}, () => getHealthData())
-    const specialAttack = new DrainingButton(true, new ScreenPosition(camera.resolution.width * 0.6, camera.resolution.height * 0.1), 32, combatIconImage, combatIconImage, specialAttackBackgroundImage, specialAttackBackgroundImage, {name: "specialAttackTopButton"}, () => getSpecialAttackData())
-    const stamina = new DrainingButton(true, new ScreenPosition(camera.resolution.width * 0.5, camera.resolution.height * 0.1), 32, staminaIconImage, staminaIconImage, staminaUnclickedBackgroundImage, staminaClickedBackgroundImage, {name: "staminaTopButton"}, () => getStaminaData())
+    const topButtonsGroup = new UiGroup(
+        true,
+        true,
+        new ScreenPosition(camera.resolution.width, 0),
+        {name: "topButtonsGroup"},
+    )
+
+    const compass = new CompassButton(true, new ScreenPosition(-camera.resolution.width * 0.03, camera.resolution.height * 0.1), 32, compassImage, uiEngineCommunicator, {name: "compassButton"})
+    const prayer = new DrainingButton(true, new ScreenPosition(-camera.resolution.width * 0.09, camera.resolution.height * 0.1), 32, prayerIconImage, prayerIconImage, prayerBackgroundImage, prayerBackgroundImage, {name: "prayerTopButton"}, () => getPrayerData())
+    const health = new DrainingButton(true, new ScreenPosition(-camera.resolution.width * 0.15, camera.resolution.height * 0.1), 32, healthIconImage, healthIconImage, healthBackgroundImage, healthBackgroundImage, {name: "healthTopButton"}, () => getHealthData())
+    const specialAttack = new DrainingButton(true, new ScreenPosition(-camera.resolution.width * 0.21, camera.resolution.height * 0.1), 32, combatIconImage, combatIconImage, specialAttackBackgroundImage, specialAttackBackgroundImage, {name: "specialAttackTopButton"}, () => getSpecialAttackData())
+    const stamina = new DrainingButton(true, new ScreenPosition(-camera.resolution.width * 0.27, camera.resolution.height * 0.1), 32, staminaIconImage, staminaIconImage, staminaUnclickedBackgroundImage, staminaClickedBackgroundImage, {name: "staminaTopButton"}, () => getStaminaData())
+
+    topButtonsGroup.addChild(compass)
+    topButtonsGroup.addChild(prayer)
+    topButtonsGroup.addChild(health)
+    topButtonsGroup.addChild(specialAttack)
+    topButtonsGroup.addChild(stamina)
 
 
     // @TODO: some weird double clicking issue going on
@@ -185,7 +199,7 @@ export function createNewUIElements(uiEngineCommunicator: UiEngineCommunicator, 
     const ribbonGroup = new UiGroup(
         true,
         true,
-        ribbonGroupScreenPosition,
+        new ScreenPosition(camera.resolution.width, camera.resolution.height),
         {name: "ribbonGroup"},
     )
 
@@ -194,7 +208,7 @@ export function createNewUIElements(uiEngineCommunicator: UiEngineCommunicator, 
     const ribbonMenuBackground = new SquareUiElement(
         true,
         false,
-        new ScreenPosition(0, ribbonButtonDimensions.height),
+        new ScreenPosition(-ribbonMenuDimensions.width, -ribbonMenuDimensions.height),
         ribbonMenuDimensions,
         {name: "ribbonMenuBackground"},
     )
@@ -204,33 +218,35 @@ export function createNewUIElements(uiEngineCommunicator: UiEngineCommunicator, 
     const ribbonMenuBorder = new SquareUiElement(
         true,
         false,
-        new ScreenPosition(-2, -2),
+        new ScreenPosition(-ribbonMenuDimensions.width - 2, -ribbonMenuDimensions.height - 2),
         ribbonMenuBorderDimensions,
-        {name: "ribbonMenuBackground"},
+        {name: "ribbonMenuBorder"},
     )
 
     ribbonMenuBorder.setActiveBackground(blackSquare)
 
     const [combatMenuGroup, combatMenuButton] = createRibbonGroupWithButton(
         false,
-        new ScreenPosition(0, 0),
+        new ScreenPosition(-ribbonMenuDimensions.width, -ribbonMenuDimensions.height),
         ribbonButtonDimensions,
         ribbonMenuController,
         combatIconDefaultImage,
         ribbonBackgroundImage,
         ribbonButtonClickedBackground,
+        ribbonMenuDimensions,
         {name: "combatMenuGroup"},
         {name: "combatMenuButton"}
     )
 
     const [inventoryMenuGroup, inventoryMenuButton] = createRibbonGroupWithButton(
         false,
-        new ScreenPosition(ribbonButtonDimensions.width, 0),
+        new ScreenPosition(-ribbonMenuDimensions.width + ribbonButtonDimensions.width, -ribbonMenuDimensions.height),
         ribbonButtonDimensions,
         ribbonMenuController,
         inventoryIconImage,
         ribbonBackgroundImage,
         ribbonButtonClickedBackground,
+        ribbonMenuDimensions,
         {name: "inventoryMenuGroup"},
         {name: "inventoryMenuButton"}
     )
@@ -242,12 +258,13 @@ export function createNewUIElements(uiEngineCommunicator: UiEngineCommunicator, 
 
     const [equipmentMenuGroup, equipmentMenuButton] = createRibbonGroupWithButton(
         false,
-        new ScreenPosition(ribbonButtonDimensions.width * 2, 0),
+        new ScreenPosition(-ribbonMenuDimensions.width + ribbonButtonDimensions.width * 2, -ribbonMenuDimensions.height),
         ribbonButtonDimensions,
         ribbonMenuController,
         equipmentIconImage,
         ribbonBackgroundImage,
         ribbonButtonClickedBackground,
+        ribbonMenuDimensions,
         {name: "equipmentMenuGroup"},
         {name: "equipmentMenuButton"}
     )
@@ -261,12 +278,13 @@ export function createNewUIElements(uiEngineCommunicator: UiEngineCommunicator, 
 
     const [prayerMenuGroup, prayerMenuButton] = createRibbonGroupWithButton(
         false,
-        new ScreenPosition(ribbonButtonDimensions.width * 3, 0),
+        new ScreenPosition(-ribbonMenuDimensions.width + ribbonButtonDimensions.width * 3, -ribbonMenuDimensions.height),
         ribbonButtonDimensions,
         ribbonMenuController,
         prayerIconImage,
         ribbonBackgroundImage,
         ribbonButtonClickedBackground,
+        ribbonMenuDimensions,
         {name: "prayerMenuGroup"},
         {name: "prayerMenuButton"}
     )
@@ -278,12 +296,13 @@ export function createNewUIElements(uiEngineCommunicator: UiEngineCommunicator, 
 
     const [spellsMenuGroup, spellsMenuButton] = createRibbonGroupWithButton(
         false,
-        new ScreenPosition(ribbonButtonDimensions.width * 4, 0),
+        new ScreenPosition(-ribbonMenuDimensions.width + ribbonButtonDimensions.width * 4, -ribbonMenuDimensions.height),
         ribbonButtonDimensions,
         ribbonMenuController,
         spellsIconImage,
         ribbonBackgroundImage,
         ribbonButtonClickedBackground,
+        ribbonMenuDimensions,
         {name: "spellsMenuGroup"},
         {name: "spellsMenuButton"}
     )
@@ -315,11 +334,7 @@ export function createNewUIElements(uiEngineCommunicator: UiEngineCommunicator, 
 
     return [
         equipmentInformationWindow,
-        compass,
-        prayer,
-        health,
-        specialAttack,
-        stamina,
+        topButtonsGroup,
         ribbonGroup,
     ]
 }
@@ -466,7 +481,7 @@ function createEquipmentInformationWindow(uiEngineCommunicator: UiEngineCommunic
         false,
         new ScreenPosition(-2, -2),
         equipmentWindowBorderDimensions,
-        {name: "equipmentWindowBackground"},
+        {name: "equipmentWindowBorder"},
     )
 
     equipmentWindowBackground.setActiveBackground(greySquare)

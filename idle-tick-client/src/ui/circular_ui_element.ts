@@ -1,5 +1,5 @@
 import type { ScreenPosition } from "../position"
-import { InteractiveElement, type IInteractiveUiElement, type InteractiveElementDebugInfo } from "./interactive_element"
+import { InteractiveElement, type InteractiveElementDebugInfo } from "./interactive_element"
 
 export class CircularUIElement extends InteractiveElement<number> {
 
@@ -14,9 +14,8 @@ export class CircularUIElement extends InteractiveElement<number> {
         elementPosition: ScreenPosition,
         radius: number,
         debugInfo: InteractiveElementDebugInfo,
-        children: IInteractiveUiElement[] = []
     ) {
-        super(isActive, isClickable, elementPosition, radius, debugInfo, children)
+        super(isActive, isClickable, elementPosition, radius, debugInfo)
         this.radius = radius
     }
 

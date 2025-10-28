@@ -21,8 +21,7 @@ export class TwoStateHoveredSquareButton extends SquareUiElement {
         debugInfo: InteractiveElementDebugInfo,
     ) {
         const isClickable = true
-        const children: IInteractiveUiElement[] = []
-        super(isActive, isClickable, elementPosition, elementSize, debugInfo, children)
+        super(isActive, isClickable, elementPosition, elementSize, debugInfo)
         
         this._unHoveredIcon = unHoveredIcon
         this._hoveredIcon = hoveredIcon

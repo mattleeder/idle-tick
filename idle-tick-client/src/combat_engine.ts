@@ -590,19 +590,12 @@ export class CombatEngine {
             mouseThreeReleased: !currentInput.mouseThreeIsDown && previousInput.mouseThreeIsDown,
         }
 
-        let uiWasClicked = false
         // Check for UI clicks first
-        for (const element of this.uiManager.children) {
-            element.handleMouseInput(processedInput)
-            if (element.shouldHaltInteraction) {
-                console.log("UI CLICK")
-                uiWasClicked = true
-                element.shouldHaltInteraction = false
-                break
-            }
-        }
+        const uiWasClicked = this.uiManager.baseUiGroup.handleMouseInput(processedInput)
 
         if (uiWasClicked) {
+            this.uiManager.baseUiGroup.shouldHaltInteraction = false
+            console.log("UI CLICK")
             return
         }
 

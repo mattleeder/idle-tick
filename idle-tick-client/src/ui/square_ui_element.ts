@@ -1,6 +1,6 @@
 import type { Resolution } from "../camera"
 import { ScreenPosition } from "../position"
-import { InteractiveElement, type IInteractiveUiElement, type InteractiveElementDebugInfo } from "./interactive_element"
+import { InteractiveElement, type InteractiveElementDebugInfo } from "./interactive_element"
 
 export class SquareUiElement extends InteractiveElement<Resolution> {
 
@@ -13,9 +13,8 @@ export class SquareUiElement extends InteractiveElement<Resolution> {
         elementPosition: ScreenPosition,
         elementSize: Resolution,
         debugInfo: InteractiveElementDebugInfo,
-        children: IInteractiveUiElement[] = []
     ) {
-        super(isActive, isClickable, elementPosition, elementSize, debugInfo, children)
+        super(isActive, isClickable, elementPosition, elementSize, debugInfo)
     }
 
     setActiveBackground(newBackground: HTMLImageElement | undefined) {
@@ -71,10 +70,6 @@ export class SquareUiElement extends InteractiveElement<Resolution> {
                 this.elementSize.width,
                 this.elementSize.height
             )
-        }
-
-        for(const child of this.children) {
-            child.draw(ctx)
         }
 
         ctx.restore()

@@ -1,5 +1,5 @@
 import { ScreenPosition } from "./position"
-import { isNumberSize, isResolution, type IInteractiveUiElement } from "./ui/interactive_element"
+import { type IInteractiveUiElement } from "./ui/interactive_element"
 import { UiGroup } from "./ui/ui_group"
 
 export class UiManager {
@@ -11,7 +11,7 @@ export class UiManager {
     private currentScaleX: number
     private currentScaleY: number
 
-    children: IInteractiveUiElement[]
+    baseUiGroup: UiGroup
 
     constructor(baseWidth: number, baseHeight: number) {
         this.baseWidth = baseWidth
@@ -24,7 +24,12 @@ export class UiManager {
         this.currentScaleX = 1
         this.currentScaleY = 1
 
-        this.children = []
+        this.baseUiGroup = new UiGroup(
+            true,
+            false,
+            new ScreenPosition(0, 0),
+            {name: "baseUiGruop"}
+        )
     }
 
     get currentWidth() {
@@ -52,7 +57,7 @@ export class UiManager {
     }
 
     addUiElement(uiElement: IInteractiveUiElement) {
-        this.children.push(uiElement)
+        this.baseUiGroup.addChild(uiElement)
     }
 
     resize(newWidth: number, newHeight: number) {
@@ -62,59 +67,20 @@ export class UiManager {
 
         const deltaX = scaleX / this.currentScaleX
         const deltaY = scaleY / this.currentScaleY
+        const delta = scale / this.currentScale
 
         this.currentScaleX = scaleX
         this.currentScaleY = scaleY
-
-        // console.log(`this.baseWidth: ${this.baseWidth}, this.baseHeight: ${this.baseHeight}, newWidth: ${newWidth}, newHeight: ${newHeight}`)
-        console.log(`this.currentScale: ${this.currentScale}, newScale: ${scale}`)
-
-        const delta = scale / this.currentScale
-        console.log(`delta: ${delta}`)
         this.currentScale = scale
-        for (const child of this.children) {
-            console.log(child.debugInfo.name)
-            child.elementPosition = new ScreenPosition(child.elementPosition.x * deltaX, child.elementPosition.y * deltaY)
-            if(isResolution(child.elementSize)) {
-                child.elementSize = {width: child.elementSize.width * deltaX, height: child.elementSize.height * deltaY}
-            } else if (isNumberSize(child.elementSize)) {
-                child.elementSize = child.elementSize * delta
-            }
 
-            if (child instanceof UiGroup) {
-                child.scaleChildren(deltaX, deltaY, delta)
-                continue
-            }
-            this.recursiveScale(child, deltaX, deltaY, delta)
-        }
-    }
+        console.log(`this.currentScale: ${this.currentScale}, newScale: ${scale}`)
+        console.log(`deltaX: ${deltaX}, deltaY: ${deltaY}, delta: ${delta}`)
 
-    recursiveScale(element: IInteractiveUiElement, deltaX: number, deltaY: number, delta: number) {
-        if (!Object.hasOwn(element, "children")) {
-            return
-        }
-        for (const child of element.children) {
-            // child.elementPosition = new ScreenPosition(child.elementPosition.x * deltaX, child.elementPosition.y * deltaY)
-            if(isResolution(child.elementSize)) {
-                child.elementSize = {width: child.elementSize.width * deltaX, height: child.elementSize.height * deltaY}
-            } else if (isNumberSize(child.elementSize)) {
-                child.elementSize = child.elementSize * delta
-            }
-
-            if (child instanceof UiGroup) {
-                child.scaleChildren(deltaX, deltaY, delta)
-                continue
-            }
-
-            this.recursiveScale(child, deltaX, deltaY, delta)
-        }
-
+        this.baseUiGroup.resize(deltaX, deltaY, delta, false)
     }
 
     draw(ctx: CanvasRenderingContext2D) {
-        for (const element of this.children) {
-            element.draw(ctx)
-        }
+        this.baseUiGroup.draw(ctx)
     }
 
 }
