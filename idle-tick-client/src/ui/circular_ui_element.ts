@@ -6,8 +6,6 @@ export class CircularUIElement extends InteractiveElement<number> {
     protected activeBackground: HTMLImageElement | undefined
     protected activeIcon: HTMLImageElement | undefined
 
-    protected radius: number
-
     constructor(
         isActive: boolean,
         isClickable: boolean,
@@ -16,7 +14,11 @@ export class CircularUIElement extends InteractiveElement<number> {
         debugInfo: InteractiveElementDebugInfo,
     ) {
         super(isActive, isClickable, elementPosition, radius, debugInfo)
-        this.radius = radius
+        this.elementSize = radius
+    }
+
+    get radius() {
+        return this.elementSize
     }
 
     setActiveBackground(newBackground: HTMLImageElement | undefined) {
